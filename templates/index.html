@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoterMarker - A Voter Visit System</title>
+
+<style>
+/* ================= RESET ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #bebebe;
+    color: #333;
+}
+
+/* ================= LOGIN PAGE ================= */
+#loginBox {
+    min-height: 100vh;
+    background: url("/static/login-bg.png") center / cover no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.loginwrapper {
+    width: 100%;
+    max-width: 450px;
+}
+
+#title {
+    text-align: center;
+    margin-bottom: 35px;
+    font-size: 40px;
+    color: white;
+    font-weight: bold;
+}
+
+.login-card {
+    width: 100%;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(14px);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 25px 45px rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+.login-card h2 {
+    text-align: center;
+    color: #fff;
+    margin-bottom: 25px;
+    font-size: 26px;
+}
+
+.labels {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 18px;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+}
+
+.login-card input:focus {
+    outline: none;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    background: #4CAF50;
+    border: none;
+    color: white;
+    font-size: 15px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-login:hover {
+    background: #43a047;
+}
+
+#loginMsg {
+    margin-top: 15px;
+    text-align: center;
+    color: #ffebee;
+    font-size: 14px;
+}
+
+/* ================= DASHBOARD ================= */
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+    background-color: lightgrey;
+}
+
+/* ================= HEADER ================= */
+.header {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+.header h2 {
+    font-size: 22px;
+}
+
+.btn-logout {
+    background: #e53935;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* ================= SEARCH ================= */
+.search-container {
+    margin-top: 20px;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+.search-wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+#searchInput {
+    flex: 1;
+    padding: 14px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+.clear-search {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    display: none;
+}
+
+.btn-search {
+    padding: 14px 24px;
+    border-radius: 6px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.search-info {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #666;
+}
+
+.search-results-info {
+    margin-top: 10px;
+    padding: 10px;
+    background: #e8f5e9;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* ================= LOADING ================= */
+.loading {
+    display: none;
+    text-align: center;
+    padding: 20px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #eee;
+    border-top: 4px solid #4CAF50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ================= STATS ================= */
+#statsBox {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.stat {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+.stat h3 {
+    font-size: 14px;
+    color: #666;
+}
+
+.stat span {
+    font-size: 34px;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+/* ================= TABLE ================= */
+.table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #4CAF50;
+    color: white;
+    padding: 14px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+}
+
+tr.visited {
+    background: #e8f5e9;
+}
+
+.btn-mark {
+    background: #4CAF50;
+    border: none;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* ================= PAGINATION ================= */
+.pagination {
+    padding: 15px;
+    text-align: center;
+}
+
+.pagination button {
+    padding: 8px 18px;
+    border-radius: 6px;
+    background: #4CAF50;
+    border: none;
+    color: white;
+}
+
+/* ================= POPUP ================= */
+.popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+}
+
+.popup-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    width: 90%;
+    max-width: 400px;
+}
+
+.popup-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-cancel {
+    background: #9e9e9e;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    color: white;
+}
+
+.btn-yes {
+    background: #4CAF50;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    color: white;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+    #statsBox {
+        grid-template-columns: 1fr;
+    }
+
+    .search-wrapper {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 375px) {
+    #title {
+        font-size: 26px;
+    }
+
+    .login-card {
+        padding: 25px;
+    }
+
+    .stat span {
+        font-size: 28px;
+    }
+
+    table th,
+    table td {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .btn-mark {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+}
+
+@media (max-width: 320px) {
+    #title {
+        font-size: 26px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+<!-- LOGIN -->
+
+<div id="loginBox">
+
+    <div class="loginwrapper">
+    
+  <h2 id="title">VoterMarker</h2>
+  
+    <div class="login-card">
+        <h2>LogIn</h2>
+        <label class="labels">Username:</label>
+        <input type="text" id="username" placeholder="Username">
+        <label class="labels">Password:</label>
+        <input type="password" id="password" placeholder="Password">
+        <button class="btn-login" onclick="login()">Login</button>
+        <p id="loginMsg"></p>
+    </div>
+</div>
+</div>
+
+<!-- VOTERS PAGE -->
+<div class="container" id="voterBox" style="display:none;">
+    <div class="header">
+        <h2>Voter List</h2>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="search-container">
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" placeholder="Search by Voter ID or Name" oninput="handleSearch()">
+            <button class="clear-search" onclick="clearSearch()">✕</button>
+            <button class="btn-search" onclick="performSearch()">Search</button>
+        </div>
+        <div class="search-info" id="searchInfo">💡 Type at least 3 characters</div>
+        <div class="search-results-info" id="searchResults" style="display:none;"></div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <div id="statsBox">
+        <div class="stat"><h3>Total Voters</h3><span id="totalVoters">0</span></div>
+        <div class="stat"><h3>Total Marked</h3><span id="totalMarked">0</span></div>
+        <div class="stat"><h3>Marked By Me</h3><span id="markedByMe">0</span></div>
+    </div>
+
+    <div class="table-container">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sr No</th>
+                        <th>Voter ID</th>
+                        <th>Name</th>
+                        <th>Middle Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="voterTable"></tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button onclick="prevPage()" id="prevBtn">Prev</button>
+            <span id="pageNo">1</span>
+            <button onclick="nextPage()" id="nextBtn">Next</button>
+        </div>
+    </div>
+</div>
+
+<!-- CONFIRM POPUP -->
+<div class="popup-overlay" id="popupOverlay">
+    <div class="popup-box">
+        <h3>Confirm</h3>
+        <p>Mark <strong id="voterName"></strong> as visited?</p>
+        <div class="popup-buttons">
+            <button class="btn-cancel" onclick="closePopup()">Cancel</button>
+            <button class="btn-yes" onclick="confirmMark()">Yes</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const API = "http://127.0.0.1:8000";
+    let page = 1;
+    let selectedVoterId = null;
+    let searchQuery = "";
+    let searchTimeout = null;
+
+    // AUTO LOGIN CHECK
+    if (localStorage.getItem("token")) {
+        showVoters();
+    }
+
+    function login() {
+        fetch(API + "/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "Success") {
+                localStorage.setItem("token", data.data.token);
+                showVoters();
+            } else {
+                document.getElementById("loginMsg").innerText = data.Message;
+            }
+        });
+    }
+
+    function showVoters() {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("voterBox").style.display = "block";
+        loadStats();
+        loadVoters();
+    }
+
+    function handleSearch() {
+    const input = document.getElementById("searchInput");
+    const clearBtn = document.querySelector(".clear-search");
+    const searchInfo = document.getElementById("searchInfo");
+    const query = input.value.trim();
+
+    // Show / hide clear button
+    clearBtn.style.display = query.length > 0 ? "block" : "none";
+
+    // Clear previous debounce
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+
+    // ✅ CASE 1: Input is EMPTY → load full data automatically
+    if (query.length === 0) {
+        searchQuery = "";
+        page = 1;
+        searchInfo.textContent = "💡 Type at least 3 characters to search";
+        searchInfo.style.color = "#666";
+        document.getElementById("searchResults").style.display = "none";
+        loadVoters();
+        loadStats();
+        return;
+    }
+
+    // ⚠️ CASE 2: Less than 3 characters
+    if (query.length < 3) {
+        searchInfo.textContent = "⚠️ Type at least 3 characters to search";
+        searchInfo.style.color = "#f57c00";
+        return;
+    }
+
+    // 🔍 CASE 3: Valid search (debounced)
+    searchInfo.textContent = "🔍 Searching...";
+    searchInfo.style.color = "#666";
+
+    searchTimeout = setTimeout(() => {
+        searchQuery = query;
+        page = 1;
+        loadVoters();
+        loadStats();
+    }, 500);
+}
+
+    function performSearch() {
+        const input = document.getElementById("searchInput");
+        const query = input.value.trim();
+
+        if (query.length >= 3) {
+            searchQuery = query;
+            page = 1; // Reset to first page
+            loadVoters();
+            loadStats();
+        } else if (query.length === 0) {
+            clearSearch();
+        }
+    }
+
+   function clearSearch() {
+    document.getElementById("searchInput").value = "";
+    document.querySelector(".clear-search").style.display = "none";
+    document.getElementById("searchInfo").textContent = "💡 Type at least 3 characters to search";
+    document.getElementById("searchInfo").style.color = "#666";
+    document.getElementById("searchResults").style.display = "none";
+
+    searchQuery = "";
+    page = 1;
+    loadVoters();
+    loadStats();
+}
+
+
+    function showLoading(show) {
+        document.getElementById("loading").style.display = show ? "block" : "none";
+    }
+
+    function loadStats() {
+        const url = searchQuery 
+            ? `${API}/voters/stats?search=${encodeURIComponent(searchQuery)}`
+            : `${API}/voters/stats`;
+
+        fetch(url, {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("totalVoters").innerText = data.data.total_voters;
+            document.getElementById("totalMarked").innerText = data.data.total_marked;
+            document.getElementById("markedByMe").innerText = data.data.marked_by_me;
+        });
+    }
+
+    function loadVoters() {
+        showLoading(true);
+
+        const url = searchQuery 
+            ? `${API}/voters?page=${page}&search=${encodeURIComponent(searchQuery)}`
+            : `${API}/voters?page=${page}`;
+
+        fetch(url, {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            showLoading(false);
+
+            // Update search results info
+            const searchResultsDiv = document.getElementById("searchResults");
+            const searchInfo = document.getElementById("searchInfo");
+            
+            if (searchQuery) {
+                searchResultsDiv.style.display = "block";
+                searchResultsDiv.innerHTML = `
+                    🔍 Found ${data.total_results} voter(s) matching "${searchQuery}"
+                    ${data.total_results > 200 ? '<br>⚠️ Showing first 200 results. Please refine your search for better results.' : ''}
+                `;
+                searchInfo.style.display = "none";
+            } else {
+                searchResultsDiv.style.display = "none";
+                searchInfo.style.display = "block";
+            }
+
+            // Handle empty results
+            if (data.data.length === 0) {
+                document.getElementById("voterTable").innerHTML = `
+                    <tr>
+                        <td colspan="7" class="no-results">
+                            ${searchQuery ? '🔍 No voters found matching your search' : 'No voters available'}
+                        </td>
+                    </tr>
+                `;
+                document.getElementById("nextBtn").disabled = true;
+                document.getElementById("prevBtn").disabled = page <= 1;
+                return;
+            }
+
+            // Render table rows
+            let html = "";
+            data.data.forEach(v => {
+                let status = v.visited_by_name
+                    ? "Visited by " + v.visited_by_name
+                    : "Not Visited";
+
+                let action = v.visited_by_name
+                    ? "✔"
+                    : `<button class="btn-mark" onclick="showPopup('${v.voter_id}', '${v.voter_name}')">Mark</button>`;
+
+                html += `
+                    <tr class="${v.visited_by_name ? 'visited' : ''}">
+                        <td>${v.serial_no}</td>
+                        <td>${v.voter_id}</td>
+                        <td>${v.voter_name}</td>
+                        <td>${v.relative_name}</td>
+                        <td>${v.age}</td>
+                        <td>${v.gender}</td>
+                        <td>${status}</td>
+                        <td>${action}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById("voterTable").innerHTML = html;
+            document.getElementById("pageNo").innerText = page;
+
+            // Pagination controls
+            document.getElementById("prevBtn").disabled = page <= 1;
+            document.getElementById("nextBtn").disabled = data.showing < 20;
+        })
+        .catch(error => {
+            showLoading(false);
+            console.error("Error loading voters:", error);
+            alert("Error loading voters. Please try again.");
+        });
+    }
+
+    function showPopup(voterId, voterName) {
+        selectedVoterId = voterId;
+        document.getElementById("voterName").innerText = voterName;
+        document.getElementById("popupOverlay").style.display = "block";
+    }
+
+    function closePopup() {
+        selectedVoterId = null;
+        document.getElementById("popupOverlay").style.display = "none";
+    }
+
+    function confirmMark() {
+        if (selectedVoterId) {
+            markVisited(selectedVoterId);
+            closePopup();
+        }
+    }
+
+    function markVisited(voterId) {
+        fetch(API + `/voters/${voterId}/visit`, {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            loadStats();
+            loadVoters();
+        });
+    }
+
+    function nextPage() {
+        page++;
+        loadVoters();
+    }
+
+    function prevPage() {
+        if (page > 1) {
+            page--;
+            loadVoters();
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem("token");
+        location.reload();
+    }
+
+    // Allow Enter key to trigger search
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
