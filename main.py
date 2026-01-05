@@ -107,7 +107,7 @@ def login(log:Login):
         conn = connector()
         cursor = conn.cursor(DictCursor)
 
-        cursor.execute("SELECT * FROM USERS WHERE USER_NAME = %s AND PASSWORD = %s",(log.username, log.password))
+        cursor.execute("SELECT * FROM users WHERE USER_NAME = %s AND PASSWORD = %s",(log.username, log.password))
         user = cursor.fetchone()
         if not user:
             return{
