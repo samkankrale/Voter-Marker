@@ -618,36 +618,251 @@ tr.visited {
         });
     }
 
-    function downloadPDF() {
-        showLoading(true);
+    // Global variable to track download
+let currentDownloadController = null;
+let downloadProgressInterval = null;
+
+// Check for pending download on page load
+window.addEventListener('DOMContentLoaded', function() {
+    checkPendingDownload();
+});
+
+function checkPendingDownload() {
+    const pendingDownload = localStorage.getItem('pendingPdfDownload');
+    if (pendingDownload) {
+        const downloadData = JSON.parse(pendingDownload);
+        const timeElapsed = Date.now() - downloadData.startTime;
         
-        fetch(API + "/admin/download-pdf", {
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem("token")
+        // If less than 10 minutes old, offer to resume
+        if (timeElapsed < 600000) {
+            if (confirm('You have a pending PDF download.\n\nWould you like to resume it?')) {
+                resumeDownload(downloadData);
+            } else {
+                localStorage.removeItem('pendingPdfDownload');
             }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Download failed');
-            return response.blob();
-        })
-        .then(blob => {
-            showLoading(false);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `voters_list_${new Date().toISOString().split('T')[0]}.pdf`;
-            document.body.appendChild(a);
-            a.click();
+        } else {
+            // Too old, remove it
+            localStorage.removeItem('pendingPdfDownload');
+        }
+    }
+}
+
+function resumeDownload(downloadData) {
+    // Calculate how much time has passed
+    const timeElapsed = Date.now() - downloadData.startTime;
+    const estimatedTotal = 240000; // 4 minutes in ms
+    const startProgress = Math.min((timeElapsed / estimatedTotal) * 100, 95);
+    
+    // Start the download again with resumed progress
+    startPdfDownload(startProgress, downloadData.startTime);
+}
+
+function downloadPDF() {
+    if (currentDownloadController) {
+        alert('A download is already in progress. Please wait or cancel it first.');
+        return;
+    }
+    
+    if (!confirm('⚠️ This will generate a large PDF with all voter data.\n\nThis may take 3-5 minutes.\n\nYou can cancel anytime or refresh the page - the download will resume.\n\nClick OK to continue.')) {
+        return;
+    }
+    
+    // Save download state
+    const downloadData = {
+        startTime: Date.now(),
+        status: 'downloading'
+    };
+    localStorage.setItem('pendingPdfDownload', JSON.stringify(downloadData));
+    
+    startPdfDownload(0, downloadData.startTime);
+}
+
+function startPdfDownload(startProgress = 0, startTime = Date.now()) {
+    // Create AbortController for cancellation
+    currentDownloadController = new AbortController();
+    
+    // Show custom progress UI
+    showDownloadProgress(startProgress, startTime);
+    
+    const token = localStorage.getItem("token");
+    
+    fetch(API + "/admin/download-pdf", {
+        method: "GET",
+        headers: {
+            "Authorization": "Bearer " + token
+        },
+        signal: currentDownloadController.signal
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                try {
+                    const json = JSON.parse(text);
+                    throw new Error(json.detail || json.message || text);
+                } catch (e) {
+                    throw new Error(`Server error (${response.status})`);
+                }
+            });
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        if (!blob || blob.size === 0) {
+            throw new Error("Received empty PDF file");
+        }
+        
+        // Success! Clean up
+        clearDownloadProgress();
+        localStorage.removeItem('pendingPdfDownload');
+        
+        // Download the file
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `voters_list_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        
+        setTimeout(() => {
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-            alert("PDF downloaded successfully!");
-        })
-        .catch(error => {
-            showLoading(false);
+        }, 100);
+        
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        alert(`✅ PDF downloaded successfully!\n\nTotal time: ${elapsed} seconds`);
+    })
+    .catch(error => {
+        clearDownloadProgress();
+        
+        if (error.name === 'AbortError') {
+            alert('Download cancelled by user.');
+            localStorage.removeItem('pendingPdfDownload');
+        } else {
             console.error("Download error:", error);
-            alert("Error downloading PDF. Please try again.");
-        });
+            alert("Error downloading PDF: " + (error.message || "Unknown error"));
+            localStorage.removeItem('pendingPdfDownload');
+        }
+    });
+}
+
+function showDownloadProgress(startProgress, startTime) {
+    // Hide main content, show progress overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'downloadProgressOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    `;
+    
+    overlay.innerHTML = `
+        <div style="background: white; border-radius: 16px; padding: 40px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <h2 style="margin: 0 0 20px 0; color: #2E7D32; text-align: center;">
+                📄 Generating PDF
+            </h2>
+            
+            <div style="margin: 30px 0;">
+                <div style="background: #e0e0e0; height: 30px; border-radius: 15px; overflow: hidden; position: relative;">
+                    <div id="progressBar" style="background: linear-gradient(90deg, #4CAF50, #81C784); height: 100%; width: ${startProgress}%; transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
+                        <span id="progressText">${Math.round(startProgress)}%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0; color: #666;">
+                <p style="margin: 5px 0; font-size: 14px;">⏱️ Elapsed: <strong id="elapsedTime">0s</strong></p>
+                <p style="margin: 5px 0; font-size: 14px;">⏳ Estimated remaining: <strong id="remainingTime">~4min</strong></p>
+                <p style="margin: 15px 0 5px 0; font-size: 12px; color: #999;">
+                    You can refresh the page - the download will resume automatically
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="cancelDownload()" style="background: #e53935; color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold;">
+                    ✕ Cancel Download
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Animate progress bar (simulated)
+    let currentProgress = startProgress;
+    const estimatedTotal = 240000; // 4 minutes
+    const updateInterval = 500; // Update every 500ms
+    
+    downloadProgressInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const estimatedProgress = (elapsed / estimatedTotal) * 100;
+        
+        // Slowly approach estimated progress (never reach 100% until actually done)
+        currentProgress = Math.min(currentProgress + 0.5, Math.min(estimatedProgress, 95));
+        
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const elapsedTime = document.getElementById('elapsedTime');
+        const remainingTime = document.getElementById('remainingTime');
+        
+        if (progressBar && progressText) {
+            progressBar.style.width = currentProgress + '%';
+            progressText.textContent = Math.round(currentProgress) + '%';
+        }
+        
+        if (elapsedTime) {
+            const seconds = Math.floor(elapsed / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            elapsedTime.textContent = minutes > 0 ? `${minutes}m ${secs}s` : `${seconds}s`;
+        }
+        
+        if (remainingTime) {
+            const remaining = Math.max(0, estimatedTotal - elapsed);
+            const remMinutes = Math.ceil(remaining / 60000);
+            remainingTime.textContent = remMinutes > 0 ? `~${remMinutes}min` : 'Almost done...';
+        }
+    }, updateInterval);
+}
+
+function clearDownloadProgress() {
+    if (downloadProgressInterval) {
+        clearInterval(downloadProgressInterval);
+        downloadProgressInterval = null;
     }
+    
+    const overlay = document.getElementById('downloadProgressOverlay');
+    if (overlay) {
+        // Animate to 100% before removing
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        if (progressBar && progressText) {
+            progressBar.style.width = '100%';
+            progressText.textContent = '100%';
+        }
+        
+        setTimeout(() => {
+            overlay.remove();
+        }, 500);
+    }
+    
+    currentDownloadController = null;
+}
+
+function cancelDownload() {
+    if (currentDownloadController) {
+        if (confirm('Are you sure you want to cancel the download?')) {
+            currentDownloadController.abort();
+            currentDownloadController = null;
+        }
+    }
+}
 
     function handleSearch() {
         const input = document.getElementById("searchInput");
