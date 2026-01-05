@@ -19,13 +19,21 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import io
 from datetime import datetime
+import os
 
 app = FastAPI()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+FONT_PATH = os.path.join(
+    BASE_DIR,
+    "fonts",
+    "NotoSansDevanagari-Regular.ttf"
+)
 # Register Devanagari font - Add this at the top of your file, after imports
 try:
     # Option 1: If you have Noto Sans Devanagari downloaded
-    pdfmetrics.registerFont(TTFont('Devanagari', 'NotoSansDevanagari-Regular.ttf'))
+    pdfmetrics.registerFont(TTFont('Devanagari', FONT_PATH))
     
     # Option 2: If on Windows with Mangal font
     # pdfmetrics.registerFont(TTFont('Devanagari', 'C:/Windows/Fonts/mangal.ttf'))
