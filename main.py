@@ -20,6 +20,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 import io
 from datetime import datetime
 import os
+import re
 
 app = FastAPI()
 
@@ -30,17 +31,9 @@ FONT_PATH = os.path.join(
     "fonts",
     "NotoSansDevanagari-Regular.ttf"
 )
-# Register Devanagari font - Add this at the top of your file, after imports
+
 try:
-    # Option 1: If you have Noto Sans Devanagari downloaded
     pdfmetrics.registerFont(TTFont('Devanagari', FONT_PATH))
-    
-    # Option 2: If on Windows with Mangal font
-    # pdfmetrics.registerFont(TTFont('Devanagari', 'C:/Windows/Fonts/mangal.ttf'))
-    
-    # Option 3: If font is in a 'fonts' folder in your project
-    # pdfmetrics.registerFont(TTFont('Devanagari', 'fonts/NotoSansDevanagari-Regular.ttf'))
-    
     DEVANAGARI_FONT_AVAILABLE = True
 except:
     DEVANAGARI_FONT_AVAILABLE = False
@@ -50,9 +43,6 @@ except:
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Register a font that supports Devanagari (you'll need to add this font file)
-# For now, we'll use default fonts and transliterated text
-# To properly display Marathi, download and register a Devanagari font like NotoSansDevanagari
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
@@ -60,9 +50,7 @@ def home(request: Request):
 
 
 def convert_to_devanagari(text):
-    """
-    Convert English text to Devanagari (Marathi) script with multiple variations
-    """
+    """Convert English text to Devanagari (Marathi) script with multiple variations"""
     variations = []
     
     try:
@@ -109,6 +97,65 @@ def is_english(text):
     return any(ord(char) < 128 for char in text)
 
 
+def calculate_relevance_score(search_term, voter_name, voter_name_en, voter_id):
+    """
+    Calculate relevance score for search results
+    Higher score = better match
+    """
+    score = 0
+    search_lower = search_term.lower()
+    name_lower = (voter_name or "").lower()
+    name_en_lower = (voter_name_en or "").lower()
+    voter_id_lower = (voter_id or "").lower()
+    
+    # Split search term into words
+    search_words = search_lower.split()
+    name_words = name_lower.split()
+    name_en_words = name_en_lower.split()
+    
+    # Exact full match (highest priority)
+    if search_lower == name_lower or search_lower == name_en_lower:
+        score += 1000
+    
+    # Exact voter ID match
+    if search_lower == voter_id_lower:
+        score += 900
+    
+    # Starts with search term
+    if name_lower.startswith(search_lower) or name_en_lower.startswith(search_lower):
+        score += 500
+    
+    # Each word exact match
+    for search_word in search_words:
+        if len(search_word) >= 2:
+            # Exact word match in any position
+            if search_word in name_words:
+                score += 200
+            if search_word in name_en_words:
+                score += 200
+            
+            # Word starts with search word
+            for name_word in name_words + name_en_words:
+                if name_word.startswith(search_word):
+                    score += 100
+                elif search_word in name_word:
+                    score += 50
+    
+    # Contains entire search term
+    if search_lower in name_lower or search_lower in name_en_lower:
+        score += 300
+    
+    # Voter ID partial match
+    if search_lower in voter_id_lower:
+        score += 150
+    
+    # Word boundary match (word followed by space)
+    if f" {search_lower}" in f" {name_lower}" or f" {search_lower}" in f" {name_en_lower}":
+        score += 250
+    
+    return score
+
+
 @app.post("/login")
 def login(log:Login):
     try:
@@ -124,8 +171,7 @@ def login(log:Login):
             } 
         
         else:
-            # Check if user is admin (you can define admin by user_name or add a new role column)
-            is_admin = user["user_name"].lower() in ["admin", "sam"]  # Modify as needed
+            is_admin = user["user_name"].lower() in ["admin", "sam"]
             
             token = create_token({"id":user["id"],"name":user["name"]})
             return{
@@ -171,32 +217,49 @@ def get_voters(request: Request, page: int = 1, limit: int = 20, search: str = N
     if search and len(search.strip()) >= 3:
         search_term = search.strip()
         
+        # Generate search variations
         search_terms = [search_term]
         if is_english(search_term):
             devanagari_variations = convert_to_devanagari(search_term)
             search_terms.extend(devanagari_variations)
             print(f"English search: '{search_term}' -> Devanagari variations: {devanagari_variations}")
         
+        # Split search into individual words for partial matching
+        search_words = search_term.split()
+        
         search_conditions = []
         search_params_list = []
         
+        # Build comprehensive search conditions
         for term in search_terms:
+            # Exact and prefix matches
             prefix_pattern = f"{term}%"
             contains_pattern = f"%{term}%"
             word_boundary_pattern = f"% {term}%"
             
             search_conditions.append(
-                "v.voter_id COLLATE utf8mb4_unicode_ci LIKE %s OR " +
+                "(v.voter_id COLLATE utf8mb4_unicode_ci LIKE %s OR " +
+                "v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s OR " +
                 "v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s OR " +
                 "v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s OR " +
                 "v.voter_name_en COLLATE utf8mb4_unicode_ci LIKE %s OR " +
                 "v.voter_name_en COLLATE utf8mb4_unicode_ci LIKE %s OR " +
-                "v.voter_name_en COLLATE utf8mb4_unicode_ci LIKE %s"
+                "v.voter_name_en COLLATE utf8mb4_unicode_ci LIKE %s)"
             )
             search_params_list.extend([
-                prefix_pattern, contains_pattern, word_boundary_pattern,
+                prefix_pattern, prefix_pattern, contains_pattern, word_boundary_pattern,
                 prefix_pattern, contains_pattern, word_boundary_pattern
             ])
+        
+        # Add individual word searches for better partial matching
+        for word in search_words:
+            if len(word) >= 2:  # Only search words with 2+ characters
+                word_pattern = f"%{word}%"
+                search_conditions.append(
+                    "(v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s OR " +
+                    "v.voter_name_en COLLATE utf8mb4_unicode_ci LIKE %s)"
+                )
+                search_params_list.extend([word_pattern, word_pattern])
         
         full_search_condition = " WHERE (" + " OR ".join(search_conditions) + ")"
         
@@ -205,11 +268,39 @@ def get_voters(request: Request, page: int = 1, limit: int = 20, search: str = N
         
         search_params = tuple(search_params_list)
         
+        # Get total count
         cursor.execute(count_query, search_params)
         total_results = cursor.fetchone()["total"]
         
-        base_query += " ORDER BY v.serial_no LIMIT %s OFFSET %s"
-        cursor.execute(base_query, search_params + (limit, offset))
+        # Fetch results without LIMIT first (to calculate relevance scores)
+        base_query += " ORDER BY v.serial_no"
+        cursor.execute(base_query, search_params)
+        all_results = cursor.fetchall()
+        
+        # Calculate relevance scores for each result
+        scored_results = []
+        for result in all_results:
+            score = calculate_relevance_score(
+                search_term,
+                result.get('voter_name', ''),
+                result.get('voter_name_en', ''),
+                result.get('voter_id', '')
+            )
+            scored_results.append({
+                'score': score,
+                'data': result
+            })
+        
+        # Sort by relevance score (descending)
+        scored_results.sort(key=lambda x: x['score'], reverse=True)
+        
+        # Apply pagination to sorted results
+        paginated_results = scored_results[offset:offset + limit]
+        data = [item['data'] for item in paginated_results]
+        
+        print(f"Search: '{search_term}' - Total: {total_results}, Page: {page}, Showing: {len(data)}")
+        if data and len(data) > 0:
+            print(f"Top result score: {scored_results[0]['score']} - {scored_results[0]['data']['voter_name_en']}")
         
     else:
         cursor.execute(count_query)
@@ -217,8 +308,7 @@ def get_voters(request: Request, page: int = 1, limit: int = 20, search: str = N
         
         base_query += " ORDER BY v.serial_no LIMIT %s OFFSET %s"
         cursor.execute(base_query, (limit, offset))
-
-    data = cursor.fetchall()
+        data = cursor.fetchall()
 
     return {
         "status": "Success",
@@ -272,6 +362,8 @@ def voter_stats(request: Request, search: str = None, id: str = None):
             devanagari_variations = convert_to_devanagari(search_term)
             search_terms.extend(devanagari_variations)
         
+        search_words = search_term.split()
+        
         search_conditions = []
         search_params_list = []
         
@@ -281,11 +373,21 @@ def voter_stats(request: Request, search: str = None, id: str = None):
             word_boundary_pattern = f"% {term}%"
             
             search_conditions.append(
-                "v.voter_id COLLATE utf8mb4_unicode_ci LIKE %s OR " +
+                "(v.voter_id COLLATE utf8mb4_unicode_ci LIKE %s OR " +
                 "v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s OR " +
-                "v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s"
+                "v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s OR " +
+                "v.voter_name_en COLLATE utf8mb4_unicode_ci LIKE %s)"
             )
-            search_params_list.extend([prefix_pattern, contains_pattern, word_boundary_pattern])
+            search_params_list.extend([prefix_pattern, contains_pattern, word_boundary_pattern, contains_pattern])
+        
+        for word in search_words:
+            if len(word) >= 2:
+                word_pattern = f"%{word}%"
+                search_conditions.append(
+                    "(v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s OR " +
+                    "v.voter_name_en COLLATE utf8mb4_unicode_ci LIKE %s)"
+                )
+                search_params_list.extend([word_pattern, word_pattern])
         
         search_condition = " WHERE (" + " OR ".join(search_conditions) + ")"
         search_params = tuple(search_params_list)
@@ -330,8 +432,6 @@ def voter_stats(request: Request, search: str = None, id: str = None):
     }
 
 
-# ============== NEW ADMIN ENDPOINTS ==============
-
 @app.get("/admin/user-wise-stats")
 @jwt_required
 def get_user_wise_stats(request: Request, id: str = None):
@@ -369,49 +469,6 @@ def get_user_wise_stats(request: Request, id: str = None):
         }
 
 
-@app.get("/admin/voters-full-list")
-@jwt_required
-def get_full_voters_list(request: Request, id: str = None):
-    """Get complete voters list for PDF generation"""
-    conn = connector()
-    cursor = conn.cursor(DictCursor)
-    
-    try:
-        cursor.execute("""
-            SELECT 
-                v.serial_no,
-                v.voter_id,
-                v.house_no,
-                v.voter_name,
-                v.voter_name_en,
-                v.relative_name,
-                v.age,
-                v.gender,
-                vv.visited_by,
-                u.name AS visited_by_name,
-                vv.visited_at
-            FROM voters v
-            LEFT JOIN voter_visits vv ON v.voter_id COLLATE utf8mb4_unicode_ci = vv.voter_id COLLATE utf8mb4_unicode_ci
-            LEFT JOIN users u ON vv.visited_by = u.id
-            ORDER BY v.serial_no
-        """)
-        
-        voters = cursor.fetchall()
-        
-        return {
-            "status": "Success",
-            "total": len(voters),
-            "data": voters
-        }
-        
-    except Exception as e:
-        print(e)
-        return {
-            "status": "Fail",
-            "message": "Error fetching voters list"
-        }
-
-
 @app.get("/admin/download-pdf")
 @jwt_required
 def download_voters_pdf(request: Request, id: str = None):
@@ -420,7 +477,6 @@ def download_voters_pdf(request: Request, id: str = None):
     cursor = conn.cursor(DictCursor)
     
     try:
-        # Get user-wise statistics
         cursor.execute("""
             SELECT 
                 u.name,
@@ -433,7 +489,6 @@ def download_voters_pdf(request: Request, id: str = None):
         """)
         user_stats = cursor.fetchall()
         
-        # Get all voters
         cursor.execute("""
             SELECT 
                 v.serial_no,
@@ -452,15 +507,11 @@ def download_voters_pdf(request: Request, id: str = None):
         
         voters = cursor.fetchall()
         
-        # Create PDF in memory
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), topMargin=30, bottomMargin=30)
         elements = []
         
-        # Styles - Use Devanagari font where needed
         styles = getSampleStyleSheet()
-        
-        # Determine which font to use
         marathi_font = 'Devanagari' if DEVANAGARI_FONT_AVAILABLE else 'Helvetica'
         
         title_style = ParagraphStyle(
@@ -469,7 +520,7 @@ def download_voters_pdf(request: Request, id: str = None):
             fontSize=18,
             textColor=colors.HexColor('#2E7D32'),
             spaceAfter=20,
-            alignment=1,  # Center
+            alignment=1,
             fontName='Helvetica-Bold'
         )
         
@@ -493,20 +544,16 @@ def download_voters_pdf(request: Request, id: str = None):
             fontName='Helvetica-Bold'
         )
         
-        # Title
         title = Paragraph("Voter List Report", title_style)
         elements.append(title)
         
-        # Date
         date_text = Paragraph(f"Generated on: {datetime.now().strftime('%d-%m-%Y %H:%M')}", subtitle_style)
         elements.append(date_text)
         elements.append(Spacer(1, 0.2*inch))
         
-        # User Statistics Section
         stats_title = Paragraph("User-wise Marking Statistics", stats_header_style)
         elements.append(stats_title)
         
-        # Create stats table
         stats_data = [['User Name', 'Voters Marked']]
         for stat in user_stats:
             stats_data.append([stat['name'], str(stat['total_marked'])])
@@ -527,21 +574,15 @@ def download_voters_pdf(request: Request, id: str = None):
         elements.append(stats_table)
         elements.append(Spacer(1, 0.3*inch))
         
-        # Voters List Section
         voters_title = Paragraph("Complete Voter List", stats_header_style)
         elements.append(voters_title)
         elements.append(Spacer(1, 0.1*inch))
         
-        # Table data - Now with proper Marathi text support
         data = [['Sr No', 'Voter ID', 'Name (English)', 'Name (Marathi)', 'Relative Name', 'Age', 'Gender', 'Status']]
         
         for voter in voters:
             status = voter['visited_by_name'] if voter['visited_by_name'] else 'Not Visited'
-            
-            # Get gender in readable format
             gender_text = 'Male' if voter['gender'] in ['पु', 'M', 'Male'] else 'Female' if voter['gender'] in ['स्त्री', 'F', 'Female'] else voter['gender']
-            
-            # Use actual Marathi names from database
             marathi_name = voter['voter_name'] if voter['voter_name'] else voter['voter_name_en']
             relative_name = voter['relative_name'] if voter['relative_name'] else '-'
             
@@ -556,10 +597,8 @@ def download_voters_pdf(request: Request, id: str = None):
                 status
             ])
         
-        # Create table with adjusted column widths
         table = Table(data, repeatRows=1, colWidths=[0.6*inch, 1.1*inch, 1.8*inch, 1.8*inch, 1.5*inch, 0.5*inch, 0.7*inch, 1.2*inch])
         
-        # Table style with Devanagari font for Marathi columns
         table_style = [
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4CAF50')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -574,16 +613,14 @@ def download_voters_pdf(request: Request, id: str = None):
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ]
         
-        # Apply Devanagari font to Marathi name columns (columns 3 and 4)
         if DEVANAGARI_FONT_AVAILABLE:
-            table_style.append(('FONTNAME', (3, 1), (3, -1), marathi_font))  # Name (Marathi) column
-            table_style.append(('FONTNAME', (4, 1), (4, -1), marathi_font))  # Relative Name column
+            table_style.append(('FONTNAME', (3, 1), (3, -1), marathi_font))
+            table_style.append(('FONTNAME', (4, 1), (4, -1), marathi_font))
         
         table.setStyle(TableStyle(table_style))
         
         elements.append(table)
         
-        # Build PDF
         doc.build(elements)
         buffer.seek(0)
         
