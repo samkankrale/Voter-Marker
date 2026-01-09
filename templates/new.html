@@ -394,8 +394,38 @@ tr.visited {
 }
 
 /* ================= RESPONSIVE ================= */
-@media (max-width: 768px) {
+/* ================= RESPONSIVE ================= */
+@media (max-width: 767px) {
+    /* Enable flexbox on container for mobile reordering */
+    #voterBox {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* Set order for mobile layout */
+    .header {
+        order: 1 !important;
+    }
+    
+    .admin-stats {
+        order: 2 !important;
+    }
+    
+    .search-container {
+        order: 3 !important;
+    }
+    
+    .loading {
+        order: 4 !important;
+        margin: 0 !important;
+    }
+    
+    .table-container {
+        order: 4 !important;
+    }
+    
     #statsBox {
+        order: 10 !important;
         grid-template-columns: 1fr;
     }
 
