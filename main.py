@@ -1,14 +1,16 @@
 from fastapi import FastAPI, Request, Depends, HTTPException
-from fastapi.responses import StreamingResponse
-from classes import Login
-from pymysql.cursors import DictCursor
-from tokens import create_token, SECRET_KEY, ALGORITHM 
-from decorators import jwt_required
+from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+
+from classes import Login
+from tokens import create_token
+from decorators import jwt_required
+from connector import connection_pool, get_db_connection, get_cursor
+
 from indic_transliteration import sanscript
 from indic_transliteration.sanscript import transliterate
-from fastapi.staticfiles import StaticFiles
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
@@ -16,28 +18,23 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-import io
+
 from datetime import datetime
+import io
 import os
-import re
-from connector import connection_pool, get_db_connection, get_cursor
+
 
 app = FastAPI()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-FONT_PATH = os.path.join(
-    BASE_DIR,
-    "fonts",
-    "NotoSansDevanagari-Regular.ttf"
-)
+FONT_PATH = os.path.join(BASE_DIR, "fonts", "NotoSansDevanagari-Regular.ttf")
 
 try:
-    pdfmetrics.registerFont(TTFont('Devanagari', FONT_PATH))
+    pdfmetrics.registerFont(TTFont("Devanagari", FONT_PATH))
     DEVANAGARI_FONT_AVAILABLE = True
-except:
+except Exception:
     DEVANAGARI_FONT_AVAILABLE = False
-    print("Warning: Devanagari font not found. Marathi text may not display correctly.")
 
 
 templates = Jinja2Templates(directory="templates")
@@ -46,24 +43,19 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize connection pool on startup"""
-    # Replace these with your actual database credentials
     connection_pool.initialize(
         host="localhost",
         user="sam",
         password="Sam@130201",
         database="election",
-        charset='utf8mb4',
-        autocommit=False
+        charset="utf8mb4",
+        autocommit=False,
     )
-    print("✓ Database connection pool initialized")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Close all connections on shutdown"""
     connection_pool.close_all()
-    print("✓ Database connections closed")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -71,137 +63,77 @@ def home(request: Request):
     return templates.TemplateResponse("new.html", {"request": request})
 
 
-def convert_to_devanagari(text):
-    """Convert English text to Devanagari (Marathi) script with multiple variations"""
+def normalize_name(text: str) -> str:
+    return " ".join(sorted(text.lower().split())) if text else ""
+
+
+def is_english(text: str) -> bool:
+    return any(ord(c) < 128 for c in text)
+
+
+def convert_to_devanagari(text: str):
     variations = []
-    
     try:
-        devanagari = transliterate(text, sanscript.ITRANS, sanscript.DEVANAGARI)
-        if devanagari.endswith('्'):
-            devanagari = devanagari[:-1]
-        variations.append(devanagari)
-        
-        devanagari_with_a = transliterate(text + 'a', sanscript.ITRANS, sanscript.DEVANAGARI)
-        if devanagari_with_a.endswith('्'):
-            devanagari_with_a = devanagari_with_a[:-1]
-        if devanagari_with_a not in variations:
-            variations.append(devanagari_with_a)
-        
-        text_lower = text.lower()
-        
-        if 'ksh' in text_lower or 'xh' in text_lower or 'ksa' in text_lower:
-            alt_text = text_lower.replace('ksh', 'kSh').replace('xh', 'kSh').replace('ksa', 'kSh')
-            alt = transliterate(alt_text, sanscript.ITRANS, sanscript.DEVANAGARI)
-            if alt.endswith('्'):
-                alt = alt[:-1]
-            if alt not in variations:
-                variations.append(alt)
-        
-        if 'sh' in text_lower:
-            alt_text = text_lower.replace('sh', 'z')
-            alt = transliterate(alt_text, sanscript.ITRANS, sanscript.DEVANAGARI)
-            if alt.endswith('्'):
-                alt = alt[:-1]
-            if alt not in variations:
-                variations.append(alt)
-    
-    except Exception as e:
-        print(f"Transliteration error: {e}")
-    
-    if not variations:
-        variations.append(text)
-    
-    return variations
-
-
-def is_english(text):
-    """Check if text contains English characters"""
-    return any(ord(char) < 128 for char in text)
+        base = transliterate(text, sanscript.ITRANS, sanscript.DEVANAGARI)
+        variations.append(base.rstrip("्"))
+        with_a = transliterate(text + "a", sanscript.ITRANS, sanscript.DEVANAGARI)
+        variations.append(with_a.rstrip("्"))
+    except Exception:
+        pass
+    return list(set(variations)) or [text]
 
 
 def calculate_relevance_score(search_term, voter_name, voter_name_en, voter_id):
-    """
-    Calculate relevance score for search results
-    Higher score = better match
-    """
     score = 0
-    search_lower = search_term.lower()
-    name_lower = (voter_name or "").lower()
-    name_en_lower = (voter_name_en or "").lower()
-    voter_id_lower = (voter_id or "").lower()
-    
-    search_words = search_lower.split()
-    name_words = name_lower.split()
-    name_en_words = name_en_lower.split()
-    
-    if search_lower == name_lower or search_lower == name_en_lower:
+
+    s = search_term.lower()
+    n = (voter_name or "").lower()
+    ne = (voter_name_en or "").lower()
+    vid = (voter_id or "").lower()
+
+    if s == n or s == ne:
         score += 1000
-    
-    if search_lower == voter_id_lower:
+
+    if normalize_name(s) == normalize_name(ne):
+        score += 800
+
+    if s == vid:
         score += 900
-    
-    if name_lower.startswith(search_lower) or name_en_lower.startswith(search_lower):
+
+    if ne.startswith(s) or n.startswith(s):
         score += 500
-    
-    for search_word in search_words:
-        if len(search_word) >= 2:
-            if search_word in name_words:
-                score += 200
-            if search_word in name_en_words:
-                score += 200
-            
-            for name_word in name_words + name_en_words:
-                if name_word.startswith(search_word):
-                    score += 100
-                elif search_word in name_word:
-                    score += 50
-    
-    if search_lower in name_lower or search_lower in name_en_lower:
+
+    if s in ne or s in n:
         score += 300
-    
-    if search_lower in voter_id_lower:
+
+    if s in vid:
         score += 150
-    
-    if f" {search_lower}" in f" {name_lower}" or f" {search_lower}" in f" {name_en_lower}":
-        score += 250
-    
+
     return score
 
 
 @app.post("/login")
 def login(log: Login):
-    try:
-        with get_db_connection() as conn:
-            cursor = get_cursor(conn, dict_cursor=True)
+    with get_db_connection() as conn:
+        cursor = get_cursor(conn, dict_cursor=True)
+        cursor.execute(
+            "SELECT * FROM users WHERE USER_NAME=%s AND PASSWORD=%s",
+            (log.username, log.password),
+        )
+        user = cursor.fetchone()
 
-            cursor.execute("SELECT * FROM users WHERE USER_NAME = %s AND PASSWORD = %s", (log.username, log.password))
-            user = cursor.fetchone()
-            
-            if not user:
-                return {
-                    "status": "Fail",
-                    "Message": "You Entered The Wrong Password Or Username"
-                } 
-            
-            is_admin = user["user_name"].lower() in ["admin", "gite"]
-            
-            token = create_token({"id": user["id"], "name": user["name"]})
-            return {
-                "status": "Success",
-                "data": {
-                    "id": user["id"],
-                    "user": user["name"],
-                    "User_Name": user["user_name"],
-                    "is_admin": is_admin,
-                    "token": token
-                }
-            }
+        if not user:
+            return {"status": "Fail", "Message": "Invalid credentials"}
 
-    except Exception as e:
-        print(e)
+        token = create_token({"id": user["id"], "name": user["name"]})
         return {
-            "status": "Fail",
-            "Message": "Server error"
+            "status": "Success",
+            "data": {
+                "id": user["id"],
+                "user": user["name"],
+                "User_Name": user["user_name"],
+                "token": token,
+            },
         }
 
 
@@ -214,100 +146,73 @@ def get_voters(request: Request, page: int = 1, limit: int = 20, search: str = N
         cursor = get_cursor(conn, dict_cursor=True)
 
         base_query = """
-        SELECT 
-            v.*, 
-            vv.visited_by, 
-            u.name AS visited_by_name,
-            vv.visited_at
-        FROM voters v
-        LEFT JOIN voter_visits vv ON v.voter_id COLLATE utf8mb4_unicode_ci = vv.voter_id COLLATE utf8mb4_unicode_ci
-        LEFT JOIN users u ON vv.visited_by = u.id
+            SELECT v.*, vv.visited_by, u.name AS visited_by_name, vv.visited_at
+            FROM voters v
+            LEFT JOIN voter_visits vv
+              ON v.voter_id COLLATE utf8mb4_unicode_ci =
+                 vv.voter_id COLLATE utf8mb4_unicode_ci
+            LEFT JOIN users u ON vv.visited_by = u.id
         """
 
-        count_query = "SELECT COUNT(*) as total FROM voters v"
+        count_query = "SELECT COUNT(*) AS total FROM voters v"
 
         if search and len(search.strip()) >= 3:
             search_term = search.strip()
-            
+            words = search_term.lower().split()
+            reversed_search = " ".join(reversed(words))
+
             search_terms = [search_term]
             if is_english(search_term):
-                devanagari_variations = convert_to_devanagari(search_term)
-                search_terms.extend(devanagari_variations)
-                print(f"English search: '{search_term}' -> Devanagari variations: {devanagari_variations}")
-            
-            search_words = search_term.split()
-            
-            search_conditions = []
-            search_params_list = []
-            
+                search_terms.extend(convert_to_devanagari(search_term))
+
+            conditions = []
+            params = []
+
             for term in search_terms:
-                prefix_pattern = f"{term}%"
-                contains_pattern = f"%{term}%"
-                word_boundary_pattern = f"% {term}%"
-                
-                search_conditions.append(
-                    "(v.voter_id COLLATE utf8mb4_unicode_ci LIKE %s OR " +
-                    "v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s OR " +
-                    "v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s OR " +
-                    "v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s OR " +
-                    "v.voter_name_en COLLATE utf8mb4_unicode_ci LIKE %s OR " +
-                    "v.voter_name_en COLLATE utf8mb4_unicode_ci LIKE %s OR " +
-                    "v.voter_name_en COLLATE utf8mb4_unicode_ci LIKE %s)"
-                )
-                search_params_list.extend([
-                    prefix_pattern, prefix_pattern, contains_pattern, word_boundary_pattern,
-                    prefix_pattern, contains_pattern, word_boundary_pattern
-                ])
-            
-            for word in search_words:
-                if len(word) >= 2:
-                    word_pattern = f"%{word}%"
-                    search_conditions.append(
-                        "(v.voter_name COLLATE utf8mb4_unicode_ci LIKE %s OR " +
-                        "v.voter_name_en COLLATE utf8mb4_unicode_ci LIKE %s)"
+                conditions.append("""
+                    (
+                        v.voter_id LIKE %s OR
+                        v.voter_name LIKE %s OR
+                        v.voter_name LIKE %s OR
+                        v.voter_name_en LIKE %s OR
+                        v.voter_name_en LIKE %s OR
+                        CONCAT_WS(' ', v.voter_name_en) LIKE %s OR
+                        CONCAT_WS(' ', v.voter_name_en) LIKE %s
                     )
-                    search_params_list.extend([word_pattern, word_pattern])
-            
-            full_search_condition = " WHERE (" + " OR ".join(search_conditions) + ")"
-            
-            base_query += full_search_condition
-            count_query += full_search_condition
-            
-            search_params = tuple(search_params_list)
-            
-            cursor.execute(count_query, search_params)
+                """)
+                params.extend([
+                    f"%{term}%",
+                    f"%{term}%",
+                    f"% {term}%",
+                    f"%{term}%",
+                    f"% {term}%",
+                    f"%{search_term}%",
+                    f"%{reversed_search}%",
+                ])
+
+            where = " WHERE " + " OR ".join(conditions)
+            base_query += where
+            count_query += where
+
+            cursor.execute(count_query, tuple(params))
             total_results = cursor.fetchone()["total"]
-            
-            base_query += " ORDER BY v.serial_no"
-            cursor.execute(base_query, search_params)
-            all_results = cursor.fetchall()
-            
-            scored_results = []
-            for result in all_results:
-                score = calculate_relevance_score(
-                    search_term,
-                    result.get('voter_name', ''),
-                    result.get('voter_name_en', ''),
-                    result.get('voter_id', '')
-                )
-                scored_results.append({
-                    'score': score,
-                    'data': result
-                })
-            
-            scored_results.sort(key=lambda x: x['score'], reverse=True)
-            
-            paginated_results = scored_results[offset:offset + limit]
-            data = [item['data'] for item in paginated_results]
-            
-            print(f"Search: '{search_term}' - Total: {total_results}, Page: {page}, Showing: {len(data)}")
-            if data and len(data) > 0:
-                print(f"Top result score: {scored_results[0]['score']} - {scored_results[0]['data']['voter_name_en']}")
-            
+
+            base_query += " ORDER BY v.serial_no LIMIT 500"
+            cursor.execute(base_query, tuple(params))
+            rows = cursor.fetchall()
+
+            scored = [
+                {"score": calculate_relevance_score(search_term, r["voter_name"], r["voter_name_en"], r["voter_id"]), "data": r}
+                for r in rows
+            ]
+
+            scored.sort(key=lambda x: x["score"], reverse=True)
+            data = [x["data"] for x in scored[offset: offset + limit]]
+
         else:
             cursor.execute(count_query)
             total_results = cursor.fetchone()["total"]
-            
+
             base_query += " ORDER BY v.serial_no LIMIT %s OFFSET %s"
             cursor.execute(base_query, (limit, offset))
             data = cursor.fetchall()
@@ -318,8 +223,9 @@ def get_voters(request: Request, page: int = 1, limit: int = 20, search: str = N
             "total_results": total_results,
             "showing": len(data),
             "data": data,
-            "search_query": search if search else None
+            "search_query": search,
         }
+
 
 
 @app.post("/voters/{voter_id}/visit")
@@ -636,3 +542,4 @@ def download_voters_pdf(request: Request, id: str = None):
         except Exception as e:
             print(e)
             raise HTTPException(status_code=500, detail="Error generating PDF")
+
