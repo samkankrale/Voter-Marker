@@ -125,17 +125,20 @@ def login(log: Login):
         if not user:
             return {"status": "Fail", "Message": "Invalid credentials"}
 
-        token = create_token({"id": user["id"], "name": user["name"]})
-        return {
-            "status": "Success",
-            "data": {
-                "id": user["id"],
-                "user": user["name"],
-                "User_Name": user["user_name"],
-                "token": token,
-            },
-        }
-
+        else:
+            is_admin = user["user_name"].lower() in ["admin", "gite"]
+            
+            token = create_token({"id":user["id"],"name":user["name"]})
+            return{
+                "status":"Success",
+                "data":{
+                    "id":user["id"],
+                    "user":user["name"],
+                    "User_Name":user["user_name"],
+                    "is_admin": is_admin,
+                    "token":token
+                }
+            }
 
 @app.get("/voters")
 @jwt_required
