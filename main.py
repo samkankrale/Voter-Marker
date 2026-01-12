@@ -171,7 +171,7 @@ def login(log:Login):
             } 
         
         else:
-            is_admin = user["user_name"].lower() in ["admin", "Gite"]
+            is_admin = user["user_name"].lower() in ["admin", "gite"]
             
             token = create_token({"id":user["id"],"name":user["name"]})
             return{
