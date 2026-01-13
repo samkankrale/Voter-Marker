@@ -1,7 +1,7 @@
 from jose import jwt, JWTError
 import datetime
 
-SECRET_KEY = "83d1e3dd64d5abfa80e74c57da340b333a8acf087ba66437abfac6482f5ec1ab64cff21100517b2cbf1f1f0bb23115d7f689710cc71e3d0db86a8a215fbb27cf"
+SECRET_KEY = "0b2ac2f10b85deddeb11ccc1e80d0e3e8331219db2181d56e4265a6e5832348c6861e66bbd53f36e1a0ce9a9dc9bde0a519ad50247744739c0f90ced2015a97a"
 ALGORITHM = "HS256"
 def create_token(data : dict, expires_delta : int = 1000):
     to_encode = data.copy()
