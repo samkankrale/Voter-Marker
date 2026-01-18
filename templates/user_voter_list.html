@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Voter Lists - VoterMarker</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #bebebe;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+    background-color: lightgrey;
+    min-height: 100vh;
+}
+
+.header {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.header h2 {
+    font-size: 22px;
+    color: #2E7D32;
+}
+
+.btn-back {
+    background: #1976D2;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-back:hover {
+    background: #1565C0;
+}
+
+.user-selector {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.user-selector h3 {
+    margin-bottom: 15px;
+    color: #424242;
+}
+
+.select-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#userSelect {
+    flex: 1;
+    padding: 14px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.btn-load {
+    padding: 14px 24px;
+    border-radius: 6px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-load:hover {
+    background: #43a047;
+}
+
+.btn-load:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.user-info-box {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+    display: none;
+}
+
+.user-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.user-info-header h3 {
+    color: #1976D2;
+    font-size: 18px;
+}
+
+.btn-download-user-pdf {
+    background: #1976D2;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-download-user-pdf:hover {
+    background: #1565C0;
+}
+
+.user-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.stat-item {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-item h4 {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.stat-item .value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+.loading {
+    display: none;
+    text-align: center;
+    padding: 20px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #eee;
+    border-top: 4px solid #4CAF50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    overflow: hidden;
+    display: none;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #4CAF50;
+    color: white;
+    padding: 14px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+}
+
+tr:nth-child(even) {
+    background: #f5f5f5;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.error-message {
+    background: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .select-wrapper {
+        flex-direction: column;
+    }
+    
+    #userSelect {
+        width: 100%;
+    }
+    
+    .user-info-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .user-stats {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <div class="header">
+        <h2>📊 User Voter Lists</h2>
+        <a href="/" class="btn-back">← Back to Dashboard</a>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+
+    <div class="user-selector">
+        <h3>Select User to View Their Visited Voters</h3>
+        <div class="select-wrapper">
+            <select id="userSelect">
+                <option value="">-- Select a User --</option>
+            </select>
+            <button class="btn-load" onclick="loadUserVoters()" id="loadBtn">Load Voter List</button>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Loading data...</p>
+    </div>
+
+    <div class="user-info-box" id="userInfoBox">
+        <div class="user-info-header">
+            <h3 id="selectedUserName"></h3>
+            <button class="btn-download-user-pdf" onclick="downloadUserPDF()">
+                📄 Download PDF
+            </button>
+        </div>
+        <div class="user-stats">
+            <div class="stat-item">
+                <h4>Total Voters Visited</h4>
+                <div class="value" id="totalVisited">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container" id="tableContainer">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sr No</th>
+                        <th>Voter ID</th>
+                        <th>Name (English)</th>
+                        <th>Name (Marathi)</th>
+                        <th>Relative Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Visited On</th>
+                    </tr>
+                </thead>
+                <tbody id="voterTable"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "";
+    let selectedUserId = null;
+    let currentUserData = null;
+
+    // Check if user is logged in
+    if (!localStorage.getItem("token")) {
+        window.location.href = "/";
+    }
+
+    // Check if user is admin
+    if (localStorage.getItem("isAdmin") !== "true") {
+        alert("Access denied. Admin only.");
+        window.location.href = "/";
+    }
+
+    // Load users on page load
+    loadUsers();
+
+    function loadUsers() {
+        fetch(API + "/admin/users", {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "Success") {
+                const select = document.getElementById("userSelect");
+                let html = '<option value="">-- Select a User --</option>';
+                
+                data.data.forEach(user => {
+                    html += `<option value="${user.id}">${user.name} (${user.user_name})</option>`;
+                });
+                
+                select.innerHTML = html;
+            } else {
+                showError("Failed to load users");
+            }
+        })
+        .catch(error => {
+            console.error("Error loading users:", error);
+            showError("Error loading users");
+        });
+    }
+
+    function loadUserVoters() {
+        const select = document.getElementById("userSelect");
+        selectedUserId = select.value;
+
+        if (!selectedUserId) {
+            alert("Please select a user");
+            return;
+        }
+
+        showLoading(true);
+        hideError();
+
+        fetch(API + `/admin/user-voters/${selectedUserId}`, {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            showLoading(false);
+
+            if (data.status === "Success") {
+                currentUserData = data.data;
+                displayUserData(data.data);
+            } else {
+                showError(data.message || "Failed to load voter data");
+            }
+        })
+        .catch(error => {
+            showLoading(false);
+            console.error("Error loading user voters:", error);
+            showError("Error loading voter data");
+        });
+    }
+
+    function displayUserData(data) {
+        const userInfo = data.user_info;
+        const voters = data.voters;
+
+        // Show user info box
+        document.getElementById("userInfoBox").style.display = "block";
+        document.getElementById("selectedUserName").textContent = 
+            `${userInfo.name} (${userInfo.user_name})`;
+        document.getElementById("totalVisited").textContent = data.total_count;
+
+        // Show table
+        document.getElementById("tableContainer").style.display = "block";
+
+        // Populate table
+        const tbody = document.getElementById("voterTable");
+        
+        if (voters.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="no-data">
+                        This user has not visited any voters yet.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        let html = "";
+        voters.forEach(voter => {
+            const genderText = voter.gender === 'पु' || voter.gender === 'M' || voter.gender === 'Male' 
+                ? 'Male' 
+                : voter.gender === 'स्त्री' || voter.gender === 'F' || voter.gender === 'Female' 
+                ? 'Female' 
+                : voter.gender;
+            
+            const marathiName = voter.voter_name || voter.voter_name_en;
+            const relativeName = voter.relative_name || '-';
+            const visitedDate = voter.visited_at 
+                ? new Date(voter.visited_at).toLocaleDateString('en-GB')
+                : '-';
+
+            html += `
+                <tr>
+                    <td>${voter.serial_no}</td>
+                    <td>${voter.voter_id}</td>
+                    <td>${voter.voter_name_en}</td>
+                    <td>${marathiName}</td>
+                    <td>${relativeName}</td>
+                    <td>${voter.age}</td>
+                    <td>${genderText}</td>
+                    <td>${visitedDate}</td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    function downloadUserPDF() {
+        if (!selectedUserId) {
+            alert("No user selected");
+            return;
+        }
+
+        const token = localStorage.getItem("token");
+        const url = `${API}/admin/download-user-pdf/${selectedUserId}`;
+
+        showLoading(true);
+
+        fetch(url, {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Failed to generate PDF");
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            showLoading(false);
+            
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `user_${currentUserData.user_info.user_name}_voters_${new Date().toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }, 100);
+        })
+        .catch(error => {
+            showLoading(false);
+            console.error("Download error:", error);
+            alert("Error downloading PDF: " + error.message);
+        });
+    }
+
+    function showLoading(show) {
+        document.getElementById("loading").style.display = show ? "block" : "none";
+        document.getElementById("loadBtn").disabled = show;
+    }
+
+    function showError(message) {
+        const errorDiv = document.getElementById("errorMessage");
+        errorDiv.textContent = message;
+        errorDiv.style.display = "block";
+    }
+
+    function hideError() {
+        document.getElementById("errorMessage").style.display = "none";
+    }
+</script>
+
+</body>
+</html>

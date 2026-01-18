@@ -62,6 +62,10 @@ async def shutdown_event():
 def home(request: Request):
     return templates.TemplateResponse("new.html", {"request": request})
 
+@app.get("/user-voter-list", response_class=HTMLResponse)
+def user_voter_list_page(request: Request):
+    return templates.TemplateResponse("user_voter_list.html", {"request": request})
+
 
 def normalize_name(text: str) -> str:
     return " ".join(sorted(text.lower().split())) if text else ""
@@ -139,6 +143,282 @@ def login(log: Login):
                     "token":token
                 }
             }
+        
+
+
+# NEW API: GET ALL USERS LIST
+@app.get("/admin/users")
+@jwt_required
+def get_users_list(request: Request, id: str = None):
+    """Get list of all users for dropdown"""
+    with get_db_connection() as conn:
+        cursor = get_cursor(conn, dict_cursor=True)
+        
+        try:
+            cursor.execute("""
+                SELECT id, name, user_name
+                FROM users
+                ORDER BY name
+            """)
+            
+            users = cursor.fetchall()
+            
+            return {
+                "status": "Success",
+                "data": users
+            }
+            
+        except Exception as e:
+            print(e)
+            return {
+                "status": "Fail",
+                "message": "Error fetching users"
+            }
+
+
+# NEW API: GET VOTERS VISITED BY SPECIFIC USER
+@app.get("/admin/user-voters/{user_id}")
+@jwt_required
+def get_user_voters(user_id: int, request: Request, id: str = None):
+    """Get all voters visited by a specific user"""
+    with get_db_connection() as conn:
+        cursor = get_cursor(conn, dict_cursor=True)
+        
+        try:
+            # Get user info
+            cursor.execute("""
+                SELECT name, user_name
+                FROM users
+                WHERE id = %s
+            """, (user_id,))
+            
+            user_info = cursor.fetchone()
+            
+            if not user_info:
+                return {
+                    "status": "Fail",
+                    "message": "User not found"
+                }
+            
+            # Get voters visited by this user
+            cursor.execute("""
+                SELECT 
+                    v.serial_no,
+                    v.voter_id,
+                    v.voter_name_en,
+                    v.voter_name,
+                    v.relative_name,
+                    v.age,
+                    v.gender,
+                    vv.visited_at
+                FROM voter_visits vv
+                JOIN voters v ON vv.voter_id COLLATE utf8mb4_unicode_ci = v.voter_id COLLATE utf8mb4_unicode_ci
+                WHERE vv.visited_by = %s
+                ORDER BY vv.visited_at DESC
+            """, (user_id,))
+            
+            voters = cursor.fetchall()
+            
+            return {
+                "status": "Success",
+                "data": {
+                    "user_info": user_info,
+                    "voters": voters,
+                    "total_count": len(voters)
+                }
+            }
+            
+        except Exception as e:
+            print(e)
+            return {
+                "status": "Fail",
+                "message": "Error fetching user voters"
+            }
+
+
+# NEW API: DOWNLOAD PDF FOR SPECIFIC USER'S VISITED VOTERS
+@app.get("/admin/download-user-pdf/{user_id}")
+@jwt_required
+def download_user_voters_pdf(user_id: int, request: Request, id: str = None):
+    """Generate and download PDF of voters visited by specific user"""
+    with get_db_connection() as conn:
+        cursor = get_cursor(conn, dict_cursor=True)
+        
+        try:
+            # Get user info
+            cursor.execute("""
+                SELECT name, user_name
+                FROM users
+                WHERE id = %s
+            """, (user_id,))
+            
+            user_info = cursor.fetchone()
+            
+            if not user_info:
+                raise HTTPException(status_code=404, detail="User not found")
+            
+            # Get voters visited by this user
+            cursor.execute("""
+                SELECT 
+                    v.serial_no,
+                    v.voter_id,
+                    v.voter_name_en,
+                    v.voter_name,
+                    v.relative_name,
+                    v.age,
+                    v.gender,
+                    vv.visited_at
+                FROM voter_visits vv
+                JOIN voters v ON vv.voter_id COLLATE utf8mb4_unicode_ci = v.voter_id COLLATE utf8mb4_unicode_ci
+                WHERE vv.visited_by = %s
+                ORDER BY v.serial_no
+            """, (user_id,))
+            
+            voters = cursor.fetchall()
+            
+            # Create PDF
+            buffer = io.BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), topMargin=30, bottomMargin=30)
+            elements = []
+            
+            styles = getSampleStyleSheet()
+            marathi_font = 'Devanagari' if DEVANAGARI_FONT_AVAILABLE else 'Helvetica'
+            
+            # Define styles
+            title_style = ParagraphStyle(
+                'CustomTitle',
+                parent=styles['Heading1'],
+                fontSize=18,
+                textColor=colors.HexColor('#2E7D32'),
+                spaceAfter=20,
+                alignment=1,
+                fontName='Helvetica-Bold'
+            )
+            
+            subtitle_style = ParagraphStyle(
+                'Subtitle',
+                parent=styles['Normal'],
+                fontSize=12,
+                textColor=colors.HexColor('#424242'),
+                spaceAfter=15,
+                alignment=1,
+                fontName='Helvetica'
+            )
+            
+            user_info_style = ParagraphStyle(
+                'UserInfo',
+                parent=styles['Normal'],
+                fontSize=14,
+                textColor=colors.HexColor('#1976D2'),
+                spaceAfter=10,
+                alignment=1,
+                fontName='Helvetica-Bold'
+            )
+            
+            # Add title
+            title = Paragraph("Voter Visit Report", title_style)
+            elements.append(title)
+            
+            # Add user info
+            user_text = Paragraph(
+                f"User: {user_info['name']} ({user_info['user_name']})", 
+                user_info_style
+            )
+            elements.append(user_text)
+            
+            # Add generation date
+            date_text = Paragraph(
+                f"Generated on: {datetime.now().strftime('%d-%m-%Y %H:%M')}", 
+                subtitle_style
+            )
+            elements.append(date_text)
+            
+            # Add total count
+            count_text = Paragraph(
+                f"Total Voters Visited: {len(voters)}", 
+                subtitle_style
+            )
+            elements.append(count_text)
+            
+            elements.append(Spacer(1, 0.3*inch))
+            
+            # Create table data
+            data = [[
+                'Sr No', 'Voter ID', 'Name (English)', 'Name (Marathi)', 
+                'Relative Name', 'Age', 'Gender', 'Visited On'
+            ]]
+            
+            for voter in voters:
+                gender_text = (
+                    'Male' if voter['gender'] in ['पु', 'M', 'Male'] 
+                    else 'Female' if voter['gender'] in ['स्त्री', 'F', 'Female'] 
+                    else voter['gender']
+                )
+                marathi_name = voter['voter_name'] if voter['voter_name'] else voter['voter_name_en']
+                relative_name = voter['relative_name'] if voter['relative_name'] else '-'
+                visited_date = voter['visited_at'].strftime('%d-%m-%Y') if voter['visited_at'] else '-'
+                
+                data.append([
+                    str(voter['serial_no']),
+                    voter['voter_id'],
+                    voter['voter_name_en'],
+                    marathi_name,
+                    relative_name,
+                    str(voter['age']),
+                    gender_text,
+                    visited_date
+                ])
+            
+            # Create table
+            table = Table(
+                data, 
+                repeatRows=1, 
+                colWidths=[0.6*inch, 1.1*inch, 1.8*inch, 1.8*inch, 1.5*inch, 0.5*inch, 0.7*inch, 1.0*inch]
+            )
+            
+            # Table styling
+            table_style = [
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4CAF50')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                ('FONTSIZE', (0, 1), (-1, -1), 7),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ]
+            
+            # Add Devanagari font if available
+            if DEVANAGARI_FONT_AVAILABLE:
+                table_style.append(('FONTNAME', (3, 1), (3, -1), marathi_font))
+                table_style.append(('FONTNAME', (4, 1), (4, -1), marathi_font))
+            
+            table.setStyle(TableStyle(table_style))
+            
+            elements.append(table)
+            
+            # Build PDF
+            doc.build(elements)
+            buffer.seek(0)
+            
+            # Create filename
+            filename = f"user_{user_info['user_name']}_voters_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+            
+            return StreamingResponse(
+                buffer,
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f"attachment; filename={filename}"
+                }
+            )
+            
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail="Error generating PDF")
+
 
 @app.get("/voters")
 @jwt_required

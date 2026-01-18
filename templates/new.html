@@ -495,6 +495,10 @@ tr.visited {
             <button class="btn-download-pdf" id="downloadPdfBtn" style="display:none;" onclick="downloadPDF()">
                 📄 Download PDF
             </button>
+            <!-- In the header section, add this button after downloadPdfBtn -->
+            <button class="btn-download-pdf" id="userVoterListBtn" style="display:none;" onclick="goToUserVoterList()">
+                👥 User Voter Lists
+            </button>
             <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
     </div>
@@ -601,6 +605,10 @@ tr.visited {
         });
     }
 
+    function goToUserVoterList() {
+    window.location.href = "/user-voter-list";
+}
+
     function showVoters() {
         document.getElementById("loginBox").style.display = "none";
         document.getElementById("voterBox").style.display = "block";
@@ -610,6 +618,7 @@ tr.visited {
         if (isAdmin) {
             // Admin view
             document.getElementById("headerTitle").innerText = "Voter List (Admin View)";
+            document.getElementById("userVoterListBtn").style.display = "flex";
             document.getElementById("downloadPdfBtn").style.display = "flex";
             document.getElementById("adminStats").style.display = "block";
             document.getElementById("actionHeader").style.display = "none";
