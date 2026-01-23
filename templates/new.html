@@ -499,6 +499,12 @@ tr.visited {
             <button class="btn-download-pdf" id="userVoterListBtn" style="display:none;" onclick="goToUserVoterList()">
                 👥 User Voter Lists
             </button>
+            <button class="btn-download-pdf" id="boothListBtn" style="display:none;" onclick="goToBoothList()">
+                🗳️ Booth Lists
+            </button>
+            <button class="btn-download-pdf" id="AddUserBtn" style="display:none;" onclick="goToAddUser()">
+                🗳️ Add User
+            </button>
             <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
     </div>
@@ -542,6 +548,7 @@ tr.visited {
                         <th>Age</th>
                         <th>Gender</th>
                         <th>Status</th>
+                        <th>Notes</th>
                         <th id="actionHeader">Action</th>
                     </tr>
                 </thead>
@@ -558,10 +565,21 @@ tr.visited {
 </div>
 
 <!-- CONFIRM POPUP -->
+<!-- CONFIRM POPUP -->
 <div class="popup-overlay" id="popupOverlay">
     <div class="popup-box">
         <h3>Confirm</h3>
         <p>Mark <strong id="voterName"></strong> as visited?</p>
+        <div style="margin: 15px 0;">
+            <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #666;">
+                Add Note (Optional):
+            </label>
+            <textarea 
+                id="visitNotes" 
+                placeholder="Enter any notes about this visit..."
+                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; min-height: 80px; font-family: inherit; font-size: 14px; resize: vertical;"
+            ></textarea>
+        </div>
         <div class="popup-buttons">
             <button class="btn-cancel" onclick="closePopup()">Cancel</button>
             <button class="btn-yes" onclick="confirmMark()">Yes</button>
@@ -609,6 +627,14 @@ tr.visited {
     window.location.href = "/user-voter-list";
 }
 
+    function goToBoothList() {
+    window.location.href = "/booth-list";
+}
+
+    function goToAddUser() {
+    window.location.href = "/addusers";
+}
+
     function showVoters() {
         document.getElementById("loginBox").style.display = "none";
         document.getElementById("voterBox").style.display = "block";
@@ -618,7 +644,9 @@ tr.visited {
         if (isAdmin) {
             // Admin view
             document.getElementById("headerTitle").innerText = "Voter List (Admin View)";
+            document.getElementById("AddUserBtn").style.display = "flex";
             document.getElementById("userVoterListBtn").style.display = "flex";
+            document.getElementById("boothListBtn").style.display = "flex";
             document.getElementById("downloadPdfBtn").style.display = "flex";
             document.getElementById("adminStats").style.display = "block";
             document.getElementById("actionHeader").style.display = "none";
@@ -1024,46 +1052,57 @@ function cancelDownload() {
             }
 
             if (data.data.length === 0) {
-                document.getElementById("voterTable").innerHTML = `
-                    <tr>
-                        <td colspan="8" class="no-results">
-                            ${searchQuery ? '🔍 No voters found matching your search' : 'No voters available'}
-                        </td>
-                    </tr>
-                `;
-                document.getElementById("nextBtn").disabled = true;
-                document.getElementById("prevBtn").disabled = page <= 1;
-                return;
-            }
+    document.getElementById("voterTable").innerHTML = `
+        <tr>
+            <td colspan="9" class="no-results">
+                ${searchQuery ? '🔍 No voters found matching your search' : 'No voters available'}
+            </td>
+        </tr>
+    `;
+    document.getElementById("nextBtn").disabled = true;
+    document.getElementById("prevBtn").disabled = page <= 1;
+    return;
+}
 
             let html = "";
-            data.data.forEach(v => {
-                let status = v.visited_by_name
-                    ? "Visited by " + v.visited_by_name
-                    : "Not Visited";
+data.data.forEach(v => {
+    let status = v.visited_by_name
+        ? "Visited by " + v.visited_by_name
+        : "Not Visited";
 
-                let action;
-                if (isAdmin) {
-                    action = v.visited_by_name ? "✔" : "-";
-                } else {
-                    action = v.visited_by_name
-                        ? "✔"
-                        : `<button class="btn-mark" onclick="showPopup('${v.voter_id}', '${v.voter_name}')">Mark</button>`;
-                }
+    // Format notes - show first 50 chars with ellipsis if longer
+    let notesDisplay = "-";
+    if (v.notes && v.notes.trim()) {
+        notesDisplay = v.notes.length > 50 
+            ? v.notes.substring(0, 50) + "..." 
+            : v.notes;
+    }
 
-                html += `
-                    <tr class="${v.visited_by_name ? 'visited' : ''}">
-                        <td>${v.serial_no}</td>
-                        <td>${v.voter_id}</td>
-                        <td>${v.voter_name}</td>
-                        <td>${v.relative_name}</td>
-                        <td>${v.age}</td>
-                        <td>${v.gender}</td>
-                        <td>${status}</td>
-                        ${isAdmin ? '' : `<td>${action}</td>`}
-                    </tr>
-                `;
-            });
+    let action;
+    if (isAdmin) {
+        action = v.visited_by_name 
+            ? `<button class="btn-mark" style="background: #ff9800;" onclick="showUnmarkPopup('${v.voter_id}', '${v.voter_name}')">Unmark</button>`
+            : "-";
+    } else {
+        action = v.visited_by_name
+            ? "✔"
+            : `<button class="btn-mark" onclick="showPopup('${v.voter_id}', '${v.voter_name}')">Mark</button>`;
+    }
+
+    html += `
+        <tr class="${v.visited_by_name ? 'visited' : ''}">
+            <td>${v.serial_no}</td>
+            <td>${v.voter_id}</td>
+            <td>${v.voter_name}</td>
+            <td>${v.relative_name}</td>
+            <td>${v.age}</td>
+            <td>${v.gender}</td>
+            <td>${status}</td>
+            <td title="${v.notes || ''}" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${notesDisplay}</td>
+            <td>${action}</td>
+        </tr>
+    `;
+});
 
             document.getElementById("voterTable").innerHTML = html;
             document.getElementById("pageNo").innerText = page;
@@ -1079,41 +1118,69 @@ function cancelDownload() {
     }
 
     function showPopup(voterId, voterName) {
-        selectedVoterId = voterId;
-        document.getElementById("voterName").innerText = voterName;
-        document.getElementById("popupOverlay").style.display = "block";
-    }
+    selectedVoterId = voterId;
+    document.getElementById("voterName").innerText = voterName;
+    document.getElementById("visitNotes").value = ""; // Clear previous notes
+    document.getElementById("popupOverlay").style.display = "block";
+}
 
-    function closePopup() {
-        selectedVoterId = null;
-        document.getElementById("popupOverlay").style.display = "none";
-    }
+   function closePopup() {
+    const popup = document.getElementById("popupOverlay");
+    
+    // Always reset to original mark popup structure
+    popup.querySelector('.popup-box').innerHTML = `
+        <h3>Confirm</h3>
+        <p>Mark <strong id="voterName"></strong> as visited?</p>
+        <div style="margin: 15px 0;">
+            <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #666;">
+                Add Note (Optional):
+            </label>
+            <textarea 
+                id="visitNotes" 
+                placeholder="Enter any notes about this visit..."
+                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; min-height: 80px; font-family: inherit; font-size: 14px; resize: vertical;"
+            ></textarea>
+        </div>
+        <div class="popup-buttons">
+            <button class="btn-cancel" onclick="closePopup()">Cancel</button>
+            <button class="btn-yes" onclick="confirmMark()">Yes</button>
+        </div>
+    `;
+    
+    popup.dataset.isUnmark = "false";
+    selectedVoterId = null;
+    popup.style.display = "none";
+}
 
     function confirmMark() {
-        if (selectedVoterId) {
-            markVisited(selectedVoterId);
-            closePopup();
-        }
+    if (selectedVoterId) {
+        const notes = document.getElementById("visitNotes").value.trim();
+        markVisited(selectedVoterId, notes);
+        closePopup();
     }
+}
 
-    function markVisited(voterId) {
-        fetch(API + `/voters/${voterId}/visit`, {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
+    function markVisited(voterId, notes) {
+    fetch(API + `/voters/${voterId}/visit`, {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token"),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            notes: notes || ""
         })
-        .then(res => res.json())
-        .then(data => {
-            alert(data.message);
-            loadStats();
-            loadVoters();
-            if (isAdmin) {
-                loadUserStats();
-            }
-        });
-    }
-
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        loadStats();
+        loadVoters();
+        if (isAdmin) {
+            loadUserStats();
+        }
+    });
+}
     function nextPage() {
         page++;
         loadVoters();
@@ -1143,6 +1210,59 @@ function cancelDownload() {
             });
         }
     });
+
+   function showUnmarkPopup(voterId, voterName) {
+    selectedVoterId = voterId;
+    
+    const popup = document.getElementById("popupOverlay");
+    const popupBox = popup.querySelector('.popup-box');
+    
+    popupBox.innerHTML = `
+        <h3>Confirm Unmark</h3>
+        <p>Remove visit mark for <strong>${voterName}</strong>?</p>
+        <div class="popup-buttons">
+            <button class="btn-cancel" onclick="closePopup()">Cancel</button>
+            <button class="btn-yes" style="background: #ff9800;" onclick="confirmUnmark()">Yes, Unmark</button>
+        </div>
+    `;
+    
+    popup.style.display = "block";
+    popup.dataset.isUnmark = "true";
+}
+
+function confirmUnmark() {
+    if (selectedVoterId) {
+        unmarkVisited(selectedVoterId);
+        closePopup();
+    }
+}
+
+function confirmUnmark() {
+    if (selectedVoterId) {
+        unmarkVisited(selectedVoterId);
+        closePopup();
+    }
+}
+
+function unmarkVisited(voterId) {
+    fetch(API + `/admin/unmark-voter/${voterId}`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        loadStats();
+        loadVoters();
+        loadUserStats();
+    })
+    .catch(error => {
+        console.error("Error unmarking voter:", error);
+        alert("Error unmarking voter. Please try again.");
+    });
+}
 </script>
 
 </body>
