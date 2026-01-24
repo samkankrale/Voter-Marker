@@ -124,8 +124,28 @@ def calculate_relevance_score(search_term, voter_name, voter_name_en, voter_id):
     return score
 
 
+def get_client_ip(request: Request) -> str:
+    """Get real client IP address even behind Nginx proxy"""
+    # Check X-Forwarded-For header (Nginx passes real IP here)
+    forwarded_for = request.headers.get("x-forwarded-for")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    
+    # Check X-Real-IP header (alternative Nginx config)
+    real_ip = request.headers.get("x-real-ip")
+    if real_ip:
+        return real_ip
+    
+    # Fallback to direct connection IP
+    return request.client.host if request.client else "Unknown"
+
+
 @app.post("/login")
-def login(log: Login):
+def login(log: Login, request: Request):
+    # Get REAL client IP (works with Nginx)
+    ip_address = get_client_ip(request)
+    user_agent = request.headers.get("user-agent", "Unknown")
+    
     with get_db_connection() as conn:
         cursor = get_cursor(conn, dict_cursor=True)
         cursor.execute(
@@ -135,10 +155,24 @@ def login(log: Login):
         user = cursor.fetchone()
 
         if not user:
+            # Log failed login attempt
+            cursor.execute("""
+                INSERT INTO login_logs (user_id, user_name, ip_address, status, user_agent)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (0, log.username, ip_address, 'failed', user_agent))
+            conn.commit()
+            
             return {"status": "Fail", "Message": "Invalid credentials"}
 
         else:
             is_admin = user["user_name"].lower() in ["admin", "gite"]
+            
+            # Log successful login
+            cursor.execute("""
+                INSERT INTO login_logs (user_id, user_name, ip_address, status, user_agent)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (user["id"], user["user_name"], ip_address, 'success', user_agent))
+            conn.commit()
             
             token = create_token({"id":user["id"],"name":user["name"]})
             return{
@@ -151,8 +185,6 @@ def login(log: Login):
                     "token":token
                 }
             }
-        
-
 
 # NEW API: GET ALL USERS LIST
 @app.get("/admin/users")

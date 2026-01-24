@@ -20,3 +20,16 @@ CREATE TABLE voter_visits (
         ON DELETE SET NULL
 );
 
+CREATE TABLE login_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    user_name VARCHAR(100),
+    ip_address VARCHAR(45),
+    login_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('success', 'failed') DEFAULT 'success',
+    user_agent TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_login_time (login_time),
+    INDEX idx_ip_address (ip_address)
+);
