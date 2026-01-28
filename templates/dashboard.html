@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoterMarker - Dashboard</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* ================= ROOT VARIABLES ================= */
+:root {
+    --primary-orange: #d4762c;
+    --primary-orange-hover: #b8621f;
+    --primary-orange-light: rgba(212, 118, 44, 0.1);
+    --dark-navy: #152238;
+    --dark-navy-light: #1e3a5f;
+    --success-green: #2E7D32;
+    --success-green-light: #4CAF50;
+    --danger-red: #e53935;
+    --warning-orange: #ff9800;
+    --text-dark: #333;
+    --text-muted: #666;
+    --text-light: #999;
+    --bg-light: #f8f9fa;
+    --bg-card: #ffffff;
+    --border-light: #e0e0e0;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-full: 50px;
+}
+
+/* ================= RESET ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', "Segoe UI", system-ui, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    color: var(--text-dark);
+    min-height: 100vh;
+}
+
+/* ================= MAIN CONTAINER ================= */
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+/* ================= HEADER - Always at top ================= */
+.header-wrapper {
+    margin-bottom: 15px;
+}
+
+.header {
+    background: linear-gradient(135deg, var(--dark-navy) 0%, var(--dark-navy-light) 100%);
+    border-radius: var(--radius-lg);
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(212, 118, 44, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 1;
+}
+
+.header-logo {
+    width: 40px;
+    height: 40px;
+    fill: var(--primary-orange);
+}
+
+.header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+.header-subtitle {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 400;
+}
+
+.header-right {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    z-index: 1;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--radius-full);
+    border: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--primary-orange);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-orange-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 118, 44, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: var(--danger-red);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c62828;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+}
+
+/* ================= STICKY SECTION (Search + Stats for User) ================= */
+.sticky-top-section {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    margin: 0 -20px;
+    padding: 0 20px 15px 20px;
+}
+
+/* ================= SEARCH CONTAINER ================= */
+.search-container {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-md);
+}
+
+.search-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+}
+
+#searchInput {
+    flex: 1;
+    padding: 12px 18px;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--border-light);
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+#searchInput:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 4px var(--primary-orange-light);
+}
+
+#searchInput::placeholder {
+    color: var(--text-light);
+}
+
+.clear-search {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0 10px;
+    display: none;
+    transition: color 0.3s ease;
+}
+
+.clear-search:hover {
+    color: var(--danger-red);
+}
+
+.btn-search {
+    padding: 12px 24px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-hover));
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(212, 118, 44, 0.4);
+}
+
+.search-info {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.search-results-info {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: var(--primary-orange-light);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--primary-orange-hover);
+    border-left: 4px solid var(--primary-orange);
+}
+
+/* ================= STATS CARDS ================= */
+#statsBox {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 15px;
+}
+
+/* Admin Stats - Only 2 cards */
+#statsBox.admin-stats-box {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.stat {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--primary-orange), var(--primary-orange-hover));
+}
+
+.stat:nth-child(2)::before {
+    background: linear-gradient(180deg, var(--success-green), var(--success-green-light));
+}
+
+.stat:nth-child(3)::before {
+    background: linear-gradient(180deg, var(--dark-navy), var(--dark-navy-light));
+}
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.stat:nth-child(1) .stat-icon {
+    background: var(--primary-orange-light);
+    color: var(--primary-orange);
+}
+
+.stat:nth-child(2) .stat-icon {
+    background: rgba(46, 125, 50, 0.1);
+    color: var(--success-green);
+}
+
+.stat:nth-child(3) .stat-icon {
+    background: rgba(21, 34, 56, 0.1);
+    color: var(--dark-navy);
+}
+
+.stat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.stat h3 {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat span {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--dark-navy), var(--primary-orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Hide Marked By Me for Admin */
+.stat.hide-for-admin {
+    display: none;
+}
+
+/* ================= SCROLLABLE CONTENT AREA ================= */
+.scrollable-content {
+    margin-top: 15px;
+}
+
+/* ================= ADMIN STATS - SCROLLABLE WITH 3 ROWS ================= */
+.admin-stats {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-stats-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--bg-light);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.admin-stats-header i {
+    font-size: 22px;
+    color: var(--primary-orange);
+}
+
+.admin-stats-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--dark-navy);
+    margin: 0;
+    flex: 1;
+}
+
+.admin-stats-header .stats-count {
+    background: var(--primary-orange-light);
+    color: var(--primary-orange);
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* Search inside Statistics */
+.stats-search-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--bg-light);
+}
+
+.stats-search-input {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--border-light);
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.stats-search-input:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px var(--primary-orange-light);
+}
+
+.stats-search-input::placeholder {
+    color: var(--text-light);
+}
+
+.stats-search-clear {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: none;
+}
+
+.stats-search-clear:hover {
+    background: var(--bg-light);
+    color: var(--danger-red);
+}
+
+.stats-search-clear.show {
+    display: block;
+}
+
+.stats-no-results {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-muted);
+}
+
+.stats-no-results i {
+    font-size: 40px;
+    color: var(--border-light);
+    margin-bottom: 10px;
+}
+
+.stats-no-results p {
+    font-size: 14px;
+}
+
+/* Scrollable container - Shows 3 rows */
+.user-stats-scroll-container {
+    overflow-y: auto;
+    margin-top: 15px;
+    padding-right: 8px;
+    max-height: 290px;
+}
+
+/* Custom scrollbar for user stats */
+.user-stats-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.user-stats-scroll-container::-webkit-scrollbar-track {
+    background: var(--bg-light);
+    border-radius: 3px;
+}
+
+.user-stats-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--primary-orange);
+    border-radius: 3px;
+}
+
+.user-stats-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-orange-hover);
+}
+
+.user-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.user-stat-card {
+    background: linear-gradient(135deg, var(--bg-light) 0%, #fff 100%);
+    padding: 15px;
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--primary-orange);
+    transition: all 0.3s ease;
+    min-height: 85px;
+}
+
+.user-stat-card:hover {
+    transform: translateX(5px);
+    box-shadow: var(--shadow-sm);
+}
+
+.user-stat-card.highlight {
+    background: linear-gradient(135deg, var(--primary-orange-light) 0%, #fff 100%);
+    border-left-width: 6px;
+    box-shadow: var(--shadow-sm);
+}
+
+.user-stat-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark-navy);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.user-stat-card h4 i {
+    color: var(--primary-orange);
+    font-size: 12px;
+}
+
+.user-stat-card .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-orange);
+}
+
+.user-stat-card .stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ================= LOADING ================= */
+.loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-md);
+}
+
+.spinner {
+    width: 45px;
+    height: 45px;
+    border: 4px solid var(--border-light);
+    border-top: 4px solid var(--primary-orange);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading p {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+/* ================= TABLE CONTAINER ================= */
+.table-container {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: var(--dark-navy);
+    color: white;
+    padding: 14px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    text-align: left;
+}
+
+th:first-child {
+    padding-left: 20px;
+}
+
+th:last-child {
+    padding-right: 20px;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+    color: var(--text-dark);
+    white-space: nowrap;
+}
+
+td:first-child {
+    padding-left: 20px;
+    font-weight: 600;
+    color: var(--dark-navy);
+}
+
+td:last-child {
+    padding-right: 20px;
+}
+
+tr {
+    transition: background-color 0.2s ease;
+}
+
+tr:hover {
+    background-color: var(--bg-light);
+}
+
+tr.visited {
+    background: linear-gradient(90deg, rgba(212, 118, 44, 0.08) 0%, rgba(212, 118, 44, 0.03) 100%);
+}
+
+tr.visited:hover {
+    background: linear-gradient(90deg, rgba(212, 118, 44, 0.12) 0%, rgba(212, 118, 44, 0.06) 100%);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.status-visited {
+    background: var(--primary-orange-light);
+    color: var(--primary-orange-hover);
+}
+
+.status-not-visited {
+    background: var(--bg-light);
+    color: var(--text-muted);
+}
+
+.btn-mark {
+    background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-hover));
+    border: none;
+    color: white;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-mark:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 118, 44, 0.4);
+}
+
+.btn-unmark {
+    background: linear-gradient(135deg, var(--warning-orange), #f57c00);
+}
+
+.btn-unmark:hover {
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+}
+
+.check-icon {
+    color: var(--success-green);
+    font-size: 16px;
+}
+
+/* ================= PAGINATION ================= */
+.pagination {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-light);
+    border-top: 1px solid var(--border-light);
+}
+
+.pagination button {
+    padding: 8px 20px;
+    border-radius: var(--radius-full);
+    background: var(--dark-navy);
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: var(--primary-orange);
+    transform: translateY(-2px);
+}
+
+.pagination button:disabled {
+    background: var(--border-light);
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.pagination .page-info {
+    background: var(--bg-card);
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--dark-navy);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ================= POPUP ================= */
+.popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(21, 34, 56, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.popup-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: 25px;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translate(-50%, -45%);
+    }
+    to { 
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.popup-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--dark-navy);
+    margin-bottom: 12px;
+}
+
+.popup-box p {
+    color: var(--text-muted);
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.popup-box strong {
+    color: var(--primary-orange);
+}
+
+.popup-box textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-md);
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    min-height: 90px;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.popup-box textarea:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+}
+
+.popup-box label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.popup-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.btn-cancel {
+    background: var(--bg-light);
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--radius-full);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background: var(--border-light);
+}
+
+.btn-yes {
+    background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-hover));
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--radius-full);
+    color: white;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.btn-yes:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(212, 118, 44, 0.4);
+}
+
+/* ================= EMPTY STATE ================= */
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.empty-state i {
+    font-size: 50px;
+    color: var(--border-light);
+    margin-bottom: 15px;
+}
+
+.empty-state h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--dark-navy);
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        padding: 15px;
+    }
+
+    .sticky-top-section {
+        margin: 0 -15px;
+        padding: 0 15px 12px 15px;
+    }
+
+    #statsBox {
+        gap: 10px;
+    }
+
+    #statsBox.admin-stats-box {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stat {
+        padding: 12px 15px;
+    }
+
+    .stat span {
+        font-size: 24px;
+    }
+
+    .user-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .user-stats-scroll-container {
+        max-height: 280px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 20px;
+        text-align: center;
+    }
+
+    .header-left {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .header h2 {
+        font-size: 18px;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 7px 12px;
+        font-size: 11px;
+    }
+
+    #statsBox {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+    }
+
+    #statsBox.admin-stats-box {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .stat {
+        padding: 10px 12px;
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+
+    .stat-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 15px;
+    }
+
+    .stat span {
+        font-size: 22px;
+    }
+
+    .stat h3 {
+        font-size: 9px;
+    }
+
+    .search-wrapper {
+        flex-direction: column;
+    }
+
+    .btn-search {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .user-stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .user-stats-scroll-container {
+        max-height: 260px;
+    }
+
+    .user-stat-card {
+        min-height: 75px;
+        padding: 12px;
+    }
+
+    .admin-stats-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .admin-stats-header .stats-count {
+        align-self: flex-start;
+    }
+
+    th, td {
+        padding: 10px 8px;
+        font-size: 11px;
+    }
+
+    th:first-child, td:first-child {
+        padding-left: 12px;
+    }
+
+    th:last-child, td:last-child {
+        padding-right: 12px;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .pagination button {
+        padding: 7px 14px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-container {
+        padding: 10px;
+    }
+
+    .sticky-top-section {
+        margin: 0 -10px;
+        padding: 0 10px 10px 10px;
+    }
+
+    .header {
+        padding: 12px 15px;
+        border-radius: var(--radius-md);
+    }
+
+    .header-logo {
+        width: 32px;
+        height: 32px;
+    }
+
+    .header h2 {
+        font-size: 16px;
+    }
+
+    .header-subtitle {
+        font-size: 10px;
+    }
+
+    .header-right {
+        gap: 6px;
+    }
+
+    .btn {
+        padding: 6px 10px;
+        font-size: 10px;
+    }
+
+    .btn i {
+        display: none;
+    }
+
+    #statsBox {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+    }
+
+    #statsBox.admin-stats-box {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .stat {
+        padding: 8px 10px;
+    }
+
+    .stat-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    .stat span {
+        font-size: 18px;
+    }
+
+    .stat h3 {
+        font-size: 8px;
+    }
+
+    .search-container {
+        padding: 15px;
+        border-radius: var(--radius-md);
+    }
+
+    #searchInput {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .btn-search {
+        padding: 10px 18px;
+        font-size: 12px;
+    }
+
+    .admin-stats {
+        padding: 15px;
+        border-radius: var(--radius-md);
+    }
+
+    .admin-stats-header h3 {
+        font-size: 15px;
+    }
+
+    .user-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .user-stats-scroll-container {
+        max-height: 240px;
+    }
+
+    .user-stat-card {
+        padding: 12px;
+        min-height: 70px;
+    }
+
+    .user-stat-card h4 {
+        font-size: 13px;
+    }
+
+    .user-stat-card .stat-value {
+        font-size: 22px;
+    }
+
+    .stats-search-input {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+
+    .table-container {
+        border-radius: var(--radius-md);
+    }
+
+    table {
+        font-size: 11px;
+    }
+
+    th, td {
+        padding: 8px 6px;
+    }
+
+    .btn-mark {
+        padding: 5px 10px;
+        font-size: 10px;
+    }
+
+    .status-badge {
+        padding: 4px 8px;
+        font-size: 9px;
+    }
+
+    .popup-box {
+        padding: 20px;
+        border-radius: var(--radius-lg);
+    }
+
+    .popup-box h3 {
+        font-size: 17px;
+    }
+
+    .popup-buttons {
+        flex-direction: column;
+    }
+
+    .popup-buttons button {
+        width: 100%;
+    }
+}
+
+/* ================= SCROLL CUSTOMIZATION ================= */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* ================= DOWNLOAD PROGRESS OVERLAY ================= */
+.download-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(21, 34, 56, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.download-box {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: 35px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+}
+
+.download-box h2 {
+    font-family: 'Playfair Display', serif;
+    color: var(--dark-navy);
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+.progress-bar-container {
+    background: var(--bg-light);
+    height: 28px;
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, var(--primary-orange), var(--primary-orange-hover));
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    transition: width 0.5s ease;
+}
+
+.download-info p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 6px 0;
+}
+
+.download-info strong {
+    color: var(--dark-navy);
+}
+</style>
+</head>
+
+<body>
+<!-- DASHBOARD -->
+<div class="dashboard-container" id="voterBox">
+    
+    <!-- Header - Always at top -->
+    <div class="header-wrapper">
+        <div class="header">
+            <div class="header-left">
+                <svg class="header-logo" viewBox="0 0 512 512">
+                    <path d="M256 0c0 0-30 80-60 110-20 20-50 20-50 20s20 20 50 30c30 10 60-10 60-50 0 40 30 60 60 50 30-10 50-30 50-30s-30 0-50-20C286 80 256 0 256 0z"/>
+                    <path d="M256 160c0 0-60 30-90 80-20 35-10 60-10 60s30-10 60-30c30-20 40-50 40-50s10 30 40 50c30 20 60 30 60 30s10-25-10-60c-30-50-90-80-90-80z"/>
+                </svg>
+                <div>
+                    <h2 id="headerTitle">Voter List</h2>
+                    <div class="header-subtitle">Manage and track voter visits</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary" id="downloadPdfBtn" style="display:none;" onclick="downloadPDF()">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn btn-secondary" id="userVoterListBtn" style="display:none;" onclick="goToUserVoterList()">
+                    <i class="fas fa-users"></i> Users
+                </button>
+                <button class="btn btn-secondary" id="boothListBtn" style="display:none;" onclick="goToBoothList()">
+                    <i class="fas fa-building"></i> Booths
+                </button>
+                <button class="btn btn-secondary" id="AddUserBtn" style="display:none;" onclick="goToAddUser()">
+                    <i class="fas fa-user-plus"></i> Add
+                </button>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Section - Search + Stats (for User) / Just Search (for Admin) -->
+    <div class="sticky-top-section" id="stickyTopSection">
+        <!-- Search Container -->
+        <div class="search-container">
+            <div class="search-wrapper">
+                <input type="text" id="searchInput" placeholder="🔍 Search by Voter ID or Name..." oninput="handleSearch()">
+                <button class="clear-search" onclick="clearSearch()">✕</button>
+                <button class="btn-search" onclick="performSearch()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+            <div class="search-info" id="searchInfo">
+                <i class="fas fa-info-circle"></i> Type at least 3 characters to search
+            </div>
+            <div class="search-results-info" id="searchResults" style="display:none;"></div>
+        </div>
+
+        <!-- Stats Cards - Inside sticky for User, Outside for Admin -->
+        <div id="statsBox">
+            <div class="stat">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-content">
+                    <h3>Total Voters</h3>
+                    <span id="totalVoters">0</span>
+                </div>
+            </div>
+            <div class="stat">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-content">
+                    <h3>Total Marked</h3>
+                    <span id="totalMarked">0</span>
+                </div>
+            </div>
+            <div class="stat" id="markedByMeCard">
+                <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                <div class="stat-content">
+                    <h3>Marked By Me</h3>
+                    <span id="markedByMe">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scrollable Content Area -->
+    <div class="scrollable-content">
+        
+        <!-- Admin User Stats - Scrollable with 3 rows visible -->
+        <div class="admin-stats" id="adminStats" style="display:none;">
+            <div class="admin-stats-header">
+                <i class="fas fa-chart-bar"></i>
+                <h3>User-wise Marking Statistics</h3>
+                <span class="stats-count" id="userStatsCount">0 users</span>
+            </div>
+            
+            <!-- Search inside Statistics -->
+            <div class="stats-search-wrapper">
+                <input 
+                    type="text" 
+                    class="stats-search-input" 
+                    id="statsSearchInput" 
+                    placeholder="🔍 Search user by name or marked count..."
+                    oninput="handleStatsSearch()"
+                >
+                <button class="stats-search-clear" id="statsSearchClear" onclick="clearStatsSearch()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="user-stats-scroll-container">
+                <div class="user-stats-grid" id="userStatsGrid"></div>
+                <div class="stats-no-results" id="statsNoResults" style="display:none;">
+                    <i class="fas fa-search"></i>
+                    <p>No users found matching your search</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading voters...</p>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sr No</th>
+                            <th>Voter ID</th>
+                            <th>Name</th>
+                            <th>Middle Name</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th id="actionHeader">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="voterTable"></tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <button onclick="prevPage()" id="prevBtn">
+                    <i class="fas fa-chevron-left"></i> Prev
+                </button>
+                <span class="page-info">Page <span id="pageNo">1</span></span>
+                <button onclick="nextPage()" id="nextBtn">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONFIRM POPUP -->
+<div class="popup-overlay" id="popupOverlay">
+    <div class="popup-box">
+        <h3>✓ Confirm Visit</h3>
+        <p>Mark <strong id="voterName"></strong> as visited?</p>
+        <div style="margin: 15px 0;">
+            <label>Add Note (Optional):</label>
+            <textarea 
+                id="visitNotes" 
+                placeholder="Enter any notes about this visit..."
+            ></textarea>
+        </div>
+        <div class="popup-buttons">
+            <button class="btn-cancel" onclick="closePopup()">Cancel</button>
+            <button class="btn-yes" onclick="confirmMark()">
+                <i class="fas fa-check"></i> Yes, Mark
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "";
+    let page = 1;
+    let selectedVoterId = null;
+    let searchQuery = "";
+    let searchTimeout = null;
+    let isAdmin = false;
+    let allUserStats = [];
+
+    // Check authentication on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!localStorage.getItem("token")) {
+            window.location.href = "/";
+            return;
+        }
+        initializeDashboard();
+    });
+
+    function initializeDashboard() {
+        isAdmin = localStorage.getItem("isAdmin") === "true";
+        
+        if (isAdmin) {
+            // Admin View Setup
+            document.getElementById("headerTitle").innerText = "Voter List (Admin)";
+            document.getElementById("AddUserBtn").style.display = "flex";
+            document.getElementById("userVoterListBtn").style.display = "flex";
+            document.getElementById("boothListBtn").style.display = "flex";
+            document.getElementById("downloadPdfBtn").style.display = "flex";
+            document.getElementById("adminStats").style.display = "flex";
+            document.getElementById("actionHeader").style.display = "";
+            
+            // Hide "Marked By Me" card for admin
+            document.getElementById("markedByMeCard").classList.add("hide-for-admin");
+            
+            // Adjust stats grid for admin (2 columns)
+            document.getElementById("statsBox").classList.add("admin-stats-box");
+            
+            loadUserStats();
+        } else {
+            // User View Setup - Show all 3 cards
+            document.getElementById("markedByMeCard").classList.remove("hide-for-admin");
+            document.getElementById("statsBox").classList.remove("admin-stats-box");
+        }
+        
+        loadStats();
+        loadVoters();
+
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        }
+
+        // Stats search enter key
+        const statsSearchInput = document.getElementById('statsSearchInput');
+        if (statsSearchInput) {
+            statsSearchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleStatsSearch();
+                }
+            });
+        }
+
+        checkPendingDownload();
+    }
+
+    function goToUserVoterList() {
+        window.location.href = "/user-voter-list";
+    }
+
+    function goToBoothList() {
+        window.location.href = "/booth-list";
+    }
+
+    function goToAddUser() {
+        window.location.href = "/addusers";
+    }
+
+    function loadUserStats() {
+        fetch(API + "/admin/user-wise-stats", {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "Success") {
+                allUserStats = data.data;
+                renderUserStats(allUserStats);
+            }
+        });
+    }
+
+    function renderUserStats(stats) {
+        const grid = document.getElementById("userStatsGrid");
+        const countSpan = document.getElementById("userStatsCount");
+        const noResults = document.getElementById("statsNoResults");
+        
+        countSpan.textContent = stats.length + " user" + (stats.length !== 1 ? "s" : "");
+        
+        if (stats.length === 0) {
+            grid.innerHTML = "";
+            noResults.style.display = "block";
+            return;
+        }
+        
+        noResults.style.display = "none";
+        
+        let html = "";
+        stats.forEach(user => {
+            html += `
+                <div class="user-stat-card">
+                    <h4><i class="fas fa-user"></i> ${user.name}</h4>
+                    <div class="stat-value">${user.total_marked}</div>
+                    <div class="stat-label">voters marked</div>
+                    ${user.last_visit ? `<div class="stat-label"><i class="fas fa-clock"></i> Last: ${new Date(user.last_visit).toLocaleDateString()}</div>` : ''}
+                </div>
+            `;
+        });
+        
+        grid.innerHTML = html;
+    }
+
+    // Search inside User Statistics
+    function handleStatsSearch() {
+        const input = document.getElementById("statsSearchInput");
+        const clearBtn = document.getElementById("statsSearchClear");
+        const query = input.value.trim().toLowerCase();
+        
+        if (query.length > 0) {
+            clearBtn.classList.add("show");
+        } else {
+            clearBtn.classList.remove("show");
+        }
+        
+        if (query.length === 0) {
+            renderUserStats(allUserStats);
+            return;
+        }
+        
+        const filtered = allUserStats.filter(user => {
+            const nameMatch = user.name.toLowerCase().includes(query);
+            const countMatch = user.total_marked.toString().includes(query);
+            return nameMatch || countMatch;
+        });
+        
+        renderUserStats(filtered);
+        
+        setTimeout(() => {
+            const cards = document.querySelectorAll('.user-stat-card');
+            cards.forEach(card => {
+                card.classList.add('highlight');
+                setTimeout(() => card.classList.remove('highlight'), 1500);
+            });
+        }, 100);
+    }
+
+    function clearStatsSearch() {
+        const input = document.getElementById("statsSearchInput");
+        const clearBtn = document.getElementById("statsSearchClear");
+        
+        input.value = "";
+        clearBtn.classList.remove("show");
+        renderUserStats(allUserStats);
+    }
+
+    // Download functionality
+    let currentDownloadController = null;
+    let downloadProgressInterval = null;
+
+    function checkPendingDownload() {
+        const pendingDownload = localStorage.getItem('pendingPdfDownload');
+        if (pendingDownload) {
+            const downloadData = JSON.parse(pendingDownload);
+            const timeElapsed = Date.now() - downloadData.startTime;
+            
+            if (timeElapsed < 600000) {
+                if (confirm('You have a pending PDF download.\n\nWould you like to resume it?')) {
+                    resumeDownload(downloadData);
+                } else {
+                    localStorage.removeItem('pendingPdfDownload');
+                }
+            } else {
+                localStorage.removeItem('pendingPdfDownload');
+            }
+        }
+    }
+
+    function resumeDownload(downloadData) {
+        const timeElapsed = Date.now() - downloadData.startTime;
+        const estimatedTotal = 240000;
+        const startProgress = Math.min((timeElapsed / estimatedTotal) * 100, 95);
+        startPdfDownload(startProgress, downloadData.startTime);
+    }
+
+    function downloadPDF() {
+        if (currentDownloadController) {
+            alert('A download is already in progress.');
+            return;
+        }
+        
+        if (!confirm('⚠️ Generate PDF with all voter data?\n\nThis may take 3-5 minutes.\n\nClick OK to continue.')) {
+            return;
+        }
+        
+        const downloadData = {
+            startTime: Date.now(),
+            status: 'downloading'
+        };
+        localStorage.setItem('pendingPdfDownload', JSON.stringify(downloadData));
+        
+        startPdfDownload(0, downloadData.startTime);
+    }
+
+    function startPdfDownload(startProgress = 0, startTime = Date.now()) {
+        currentDownloadController = new AbortController();
+        showDownloadProgress(startProgress, startTime);
+        
+        fetch(API + "/admin/download-pdf", {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            signal: currentDownloadController.signal
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`Server error (${response.status})`);
+            return response.blob();
+        })
+        .then(blob => {
+            if (!blob || blob.size === 0) throw new Error("Empty PDF");
+            
+            clearDownloadProgress();
+            localStorage.removeItem('pendingPdfDownload');
+            
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `voters_list_${new Date().toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }, 100);
+            
+            alert(`✅ PDF downloaded successfully!`);
+        })
+        .catch(error => {
+            clearDownloadProgress();
+            if (error.name !== 'AbortError') {
+                alert("Error: " + error.message);
+            }
+            localStorage.removeItem('pendingPdfDownload');
+        });
+    }
+
+    function showDownloadProgress(startProgress, startTime) {
+        const overlay = document.createElement('div');
+        overlay.id = 'downloadProgressOverlay';
+        overlay.className = 'download-overlay';
+        
+        overlay.innerHTML = `
+            <div class="download-box">
+                <h2>📄 Generating PDF</h2>
+                <div class="progress-bar-container">
+                    <div id="progressBar" class="progress-bar" style="width: ${startProgress}%">
+                        <span id="progressText">${Math.round(startProgress)}%</span>
+                    </div>
+                </div>
+                <div class="download-info">
+                    <p>⏱️ Elapsed: <strong id="elapsedTime">0s</strong></p>
+                    <p>⏳ Remaining: <strong id="remainingTime">~4min</strong></p>
+                </div>
+                <button class="btn btn-danger" onclick="cancelDownload()" style="margin-top: 15px;">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        let currentProgress = startProgress;
+        const estimatedTotal = 240000;
+        
+        downloadProgressInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            currentProgress = Math.min(currentProgress + 0.5, Math.min((elapsed / estimatedTotal) * 100, 95));
+            
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const elapsedTime = document.getElementById('elapsedTime');
+            const remainingTime = document.getElementById('remainingTime');
+            
+            if (progressBar) progressBar.style.width = currentProgress + '%';
+            if (progressText) progressText.textContent = Math.round(currentProgress) + '%';
+            
+            if (elapsedTime) {
+                const seconds = Math.floor(elapsed / 1000);
+                const minutes = Math.floor(seconds / 60);
+                elapsedTime.textContent = minutes > 0 ? `${minutes}m ${seconds % 60}s` : `${seconds}s`;
+            }
+            
+            if (remainingTime) {
+                const remaining = Math.max(0, estimatedTotal - elapsed);
+                remainingTime.textContent = Math.ceil(remaining / 60000) > 0 ? `~${Math.ceil(remaining / 60000)}min` : 'Almost done...';
+            }
+        }, 500);
+    }
+
+    function clearDownloadProgress() {
+        if (downloadProgressInterval) {
+            clearInterval(downloadProgressInterval);
+            downloadProgressInterval = null;
+        }
+        
+        const overlay = document.getElementById('downloadProgressOverlay');
+        if (overlay) {
+            setTimeout(() => overlay.remove(), 300);
+        }
+        
+        currentDownloadController = null;
+    }
+
+    function cancelDownload() {
+        if (currentDownloadController && confirm('Cancel download?')) {
+            currentDownloadController.abort();
+            localStorage.removeItem('pendingPdfDownload');
+        }
+    }
+
+    function handleSearch() {
+        const input = document.getElementById("searchInput");
+        const clearBtn = document.querySelector(".clear-search");
+        const searchInfo = document.getElementById("searchInfo");
+        const query = input.value.trim();
+
+        clearBtn.style.display = query.length > 0 ? "block" : "none";
+
+        if (searchTimeout) clearTimeout(searchTimeout);
+
+        if (query.length === 0) {
+            searchQuery = "";
+            page = 1;
+            searchInfo.innerHTML = '<i class="fas fa-info-circle"></i> Type at least 3 characters to search';
+            searchInfo.style.color = "var(--text-muted)";
+            document.getElementById("searchResults").style.display = "none";
+            loadVoters();
+            loadStats();
+            return;
+        }
+
+        if (query.length < 3) {
+            searchInfo.innerHTML = '<i class="fas fa-exclamation-circle"></i> Type at least 3 characters';
+            searchInfo.style.color = "var(--warning-orange)";
+            return;
+        }
+
+        searchInfo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+        searchInfo.style.color = "var(--text-muted)";
+
+        searchTimeout = setTimeout(() => {
+            searchQuery = query;
+            page = 1;
+            loadVoters();
+            loadStats();
+        }, 500);
+    }
+
+    function performSearch() {
+        const query = document.getElementById("searchInput").value.trim();
+        if (query.length >= 3) {
+            searchQuery = query;
+            page = 1;
+            loadVoters();
+            loadStats();
+        } else if (query.length === 0) {
+            clearSearch();
+        }
+    }
+
+    function clearSearch() {
+        document.getElementById("searchInput").value = "";
+        document.querySelector(".clear-search").style.display = "none";
+        document.getElementById("searchInfo").innerHTML = '<i class="fas fa-info-circle"></i> Type at least 3 characters to search';
+        document.getElementById("searchInfo").style.color = "var(--text-muted)";
+        document.getElementById("searchResults").style.display = "none";
+        searchQuery = "";
+        page = 1;
+        loadVoters();
+        loadStats();
+    }
+
+    function showLoading(show) {
+        document.getElementById("loading").style.display = show ? "block" : "none";
+    }
+
+    function loadStats() {
+        const url = searchQuery 
+            ? `${API}/voters/stats?search=${encodeURIComponent(searchQuery)}`
+            : `${API}/voters/stats`;
+
+        fetch(url, {
+            headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("totalVoters").innerText = data.data.total_voters;
+            document.getElementById("totalMarked").innerText = data.data.total_marked;
+            document.getElementById("markedByMe").innerText = data.data.marked_by_me;
+        });
+    }
+
+    function loadVoters() {
+        showLoading(true);
+
+        const url = searchQuery 
+            ? `${API}/voters?page=${page}&search=${encodeURIComponent(searchQuery)}`
+            : `${API}/voters?page=${page}`;
+
+        fetch(url, {
+            headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
+        })
+        .then(res => res.json())
+        .then(data => {
+            showLoading(false);
+
+            const searchResultsDiv = document.getElementById("searchResults");
+            const searchInfo = document.getElementById("searchInfo");
+            
+            if (searchQuery) {
+                searchResultsDiv.style.display = "block";
+                searchResultsDiv.innerHTML = `<i class="fas fa-search"></i> Found ${data.total_results} voter(s) matching "${searchQuery}"`;
+                searchInfo.style.display = "none";
+            } else {
+                searchResultsDiv.style.display = "none";
+                searchInfo.style.display = "flex";
+            }
+
+            if (data.data.length === 0) {
+                document.getElementById("voterTable").innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="fas fa-search"></i>
+                                <h4>${searchQuery ? 'No Results Found' : 'No Voters Available'}</h4>
+                                <p>${searchQuery ? 'Try different search terms' : 'No voter data has been loaded yet'}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById("nextBtn").disabled = true;
+                document.getElementById("prevBtn").disabled = page <= 1;
+                return;
+            }
+
+            let html = "";
+            data.data.forEach(v => {
+                let statusHtml = v.visited_by_name
+                    ? `<span class="status-badge status-visited"><i class="fas fa-check"></i> ${v.visited_by_name}</span>`
+                    : `<span class="status-badge status-not-visited"><i class="fas fa-clock"></i> Pending</span>`;
+
+                let notesDisplay = v.notes && v.notes.trim() 
+                    ? (v.notes.length > 30 ? v.notes.substring(0, 30) + "..." : v.notes)
+                    : "-";
+
+                let action;
+                if (isAdmin) {
+                    action = v.visited_by_name 
+                        ? `<button class="btn-mark btn-unmark" onclick="showUnmarkPopup('${v.voter_id}', '${v.voter_name}')"><i class="fas fa-undo"></i> Unmark</button>`
+                        : "-";
+                } else {
+                    action = v.visited_by_name
+                        ? `<i class="fas fa-check-circle check-icon"></i>`
+                        : `<button class="btn-mark" onclick="showPopup('${v.voter_id}', '${v.voter_name}')"><i class="fas fa-check"></i> Mark</button>`;
+                }
+
+                html += `
+                    <tr class="${v.visited_by_name ? 'visited' : ''}">
+                        <td>${v.serial_no}</td>
+                        <td><strong>${v.voter_id}</strong></td>
+                        <td>${v.voter_name}</td>
+                        <td>${v.relative_name}</td>
+                        <td>${statusHtml}</td>
+                        <td title="${v.notes || ''}">${notesDisplay}</td>
+                        <td>${action}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById("voterTable").innerHTML = html;
+            document.getElementById("pageNo").innerText = page;
+            document.getElementById("prevBtn").disabled = page <= 1;
+            document.getElementById("nextBtn").disabled = data.showing < 20;
+        })
+        .catch(error => {
+            showLoading(false);
+            console.error("Error:", error);
+            alert("Error loading voters.");
+        });
+    }
+
+    function showPopup(voterId, voterName) {
+        selectedVoterId = voterId;
+        document.getElementById("voterName").innerText = voterName;
+        document.getElementById("visitNotes").value = "";
+        document.getElementById("popupOverlay").style.display = "block";
+    }
+
+    function closePopup() {
+        const popup = document.getElementById("popupOverlay");
+        popup.querySelector('.popup-box').innerHTML = `
+            <h3>✓ Confirm Visit</h3>
+            <p>Mark <strong id="voterName"></strong> as visited?</p>
+            <div style="margin: 15px 0;">
+                <label>Add Note (Optional):</label>
+                <textarea id="visitNotes" placeholder="Enter any notes about this visit..."></textarea>
+            </div>
+            <div class="popup-buttons">
+                <button class="btn-cancel" onclick="closePopup()">Cancel</button>
+                <button class="btn-yes" onclick="confirmMark()"><i class="fas fa-check"></i> Yes, Mark</button>
+            </div>
+        `;
+        selectedVoterId = null;
+        popup.style.display = "none";
+    }
+
+    function confirmMark() {
+        if (selectedVoterId) {
+            const notes = document.getElementById("visitNotes").value.trim();
+            markVisited(selectedVoterId, notes);
+            closePopup();
+        }
+    }
+
+    function markVisited(voterId, notes) {
+        fetch(API + `/voters/${voterId}/visit`, {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ notes: notes || "" })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            loadStats();
+            loadVoters();
+            if (isAdmin) loadUserStats();
+        });
+    }
+
+    function nextPage() { page++; loadVoters(); }
+    function prevPage() { if (page > 1) { page--; loadVoters(); } }
+
+    function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("isAdmin");
+        localStorage.removeItem("userName");
+        window.location.href = "/";
+    }
+
+    function showUnmarkPopup(voterId, voterName) {
+        selectedVoterId = voterId;
+        const popup = document.getElementById("popupOverlay");
+        popup.querySelector('.popup-box').innerHTML = `
+            <h3>⚠️ Confirm Unmark</h3>
+            <p>Remove visit mark for <strong>${voterName}</strong>?</p>
+            <div class="popup-buttons">
+                <button class="btn-cancel" onclick="closePopup()">Cancel</button>
+                <button class="btn-yes" style="background: linear-gradient(135deg, var(--warning-orange), #f57c00);" onclick="confirmUnmark()">
+                    <i class="fas fa-undo"></i> Yes, Unmark
+                </button>
+            </div>
+        `;
+        popup.style.display = "block";
+    }
+
+    function confirmUnmark() {
+        if (selectedVoterId) {
+            unmarkVisited(selectedVoterId);
+            closePopup();
+        }
+    }
+
+    function unmarkVisited(voterId) {
+        fetch(API + `/admin/unmark-voter/${voterId}`, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            loadStats();
+            loadVoters();
+            loadUserStats();
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error unmarking voter.");
+        });
+    }
+</script>
+
+</body>
+</html>

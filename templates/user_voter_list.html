@@ -5,7 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>User Voter Lists - VoterMarker</title>
 
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
+/* ================= ROOT VARIABLES ================= */
+:root {
+    --primary-orange: #d4762c;
+    --primary-orange-hover: #b8621f;
+    --primary-orange-light: rgba(212, 118, 44, 0.1);
+    --dark-navy: #152238;
+    --dark-navy-light: #1e3a5f;
+    --success-green: #2E7D32;
+    --success-green-light: #4CAF50;
+    --danger-red: #e53935;
+    --warning-orange: #ff9800;
+    --text-dark: #333;
+    --text-muted: #666;
+    --text-light: #999;
+    --bg-light: #f8f9fa;
+    --bg-card: #ffffff;
+    --border-light: #e0e0e0;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-full: 50px;
+}
+
+/* ================= RESET ================= */
 * {
     margin: 0;
     padding: 0;
@@ -13,101 +47,197 @@
 }
 
 body {
-    font-family: "Segoe UI", system-ui, sans-serif;
-    background: #bebebe;
-    color: #333;
-}
-
-.container {
-    max-width: 1200px;
-    margin: auto;
-    padding: 20px;
-    background-color: lightgrey;
+    font-family: 'Poppins', "Segoe UI", system-ui, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    color: var(--text-dark);
     min-height: 100vh;
 }
 
+/* ================= MAIN CONTAINER ================= */
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+/* ================= FIXED HEADER ================= */
+.fixed-header-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    margin: -20px -20px 0 -20px;
+    padding: 20px 20px 15px 20px;
+}
+
 .header {
-    background: white;
-    border-radius: 12px;
-    padding: 20px 25px;
+    background: linear-gradient(135deg, var(--dark-navy) 0%, var(--dark-navy-light) 100%);
+    border-radius: var(--radius-lg);
+    padding: 15px 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
-    margin-bottom: 20px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
 }
 
-.header h2 {
-    font-size: 22px;
-    color: #2E7D32;
+.header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(212, 118, 44, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 1;
 }
 
 .btn-back {
-    background: #1976D2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: var(--radius-full);
+    background: rgba(255,255,255,0.15);
     color: white;
     border: none;
-    padding: 10px 18px;
-    border-radius: 6px;
     cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
     text-decoration: none;
-    display: inline-block;
+    backdrop-filter: blur(10px);
 }
 
 .btn-back:hover {
-    background: #1565C0;
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
 }
 
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 1;
+}
+
+.header-logo {
+    width: 40px;
+    height: 40px;
+    fill: var(--primary-orange);
+}
+
+.header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+.header-subtitle {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 400;
+}
+
+/* ================= SCROLLABLE CONTENT ================= */
+.scrollable-content {
+    margin-top: 20px;
+}
+
+/* ================= USER SELECTOR ================= */
 .user-selector {
-    background: white;
-    border-radius: 12px;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
     padding: 25px;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    box-shadow: var(--shadow-md);
     margin-bottom: 20px;
 }
 
 .user-selector h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--dark-navy);
     margin-bottom: 15px;
-    color: #424242;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-selector h3 i {
+    color: var(--primary-orange);
 }
 
 .select-wrapper {
     display: flex;
-    gap: 10px;
-    align-items: center;
+    gap: 12px;
+    align-items: stretch;
 }
 
 #userSelect {
     flex: 1;
-    padding: 14px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
+    padding: 14px 20px;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--border-light);
+    font-family: 'Poppins', sans-serif;
     font-size: 14px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    appearance: none;
+    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 20px center;
+}
+
+#userSelect:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 4px var(--primary-orange-light);
 }
 
 .btn-load {
-    padding: 14px 24px;
-    border-radius: 6px;
-    background: #4CAF50;
+    padding: 14px 28px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-hover));
     color: white;
     border: none;
     cursor: pointer;
+    font-family: 'Poppins', sans-serif;
     font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.btn-load:hover {
-    background: #43a047;
+.btn-load:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(212, 118, 44, 0.4);
 }
 
 .btn-load:disabled {
-    background: #ccc;
+    background: var(--border-light);
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
+/* ================= USER INFO BOX ================= */
 .user-info-box {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 25px;
+    box-shadow: var(--shadow-md);
     margin-bottom: 20px;
     display: none;
 }
@@ -116,28 +246,44 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--bg-light);
 }
 
 .user-info-header h3 {
-    color: #1976D2;
+    font-family: 'Playfair Display', serif;
+    color: var(--dark-navy);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-info-header h3 i {
+    color: var(--primary-orange);
     font-size: 18px;
 }
 
 .btn-download-user-pdf {
-    background: #1976D2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--dark-navy), var(--dark-navy-light));
     color: white;
     border: none;
-    padding: 10px 18px;
-    border-radius: 6px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
 .btn-download-user-pdf:hover {
-    background: #1565C0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(21, 34, 56, 0.4);
 }
 
 .user-stats {
@@ -147,48 +293,89 @@ body {
 }
 
 .stat-item {
-    background: #f5f5f5;
-    padding: 15px;
-    border-radius: 8px;
+    background: linear-gradient(135deg, var(--bg-light) 0%, #fff 100%);
+    padding: 20px;
+    border-radius: var(--radius-md);
     text-align: center;
+    border-left: 4px solid var(--primary-orange);
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateX(5px);
+    box-shadow: var(--shadow-sm);
 }
 
 .stat-item h4 {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
 }
 
 .stat-item .value {
-    font-size: 28px;
-    font-weight: bold;
-    color: #4CAF50;
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--dark-navy), var(--primary-orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
+/* ================= LOADING ================= */
 .loading {
     display: none;
     text-align: center;
-    padding: 20px;
+    padding: 40px;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-md);
 }
 
 .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #eee;
-    border-top: 4px solid #4CAF50;
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--border-light);
+    border-top: 4px solid var(--primary-orange);
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin: auto;
+    margin: 0 auto 15px;
 }
 
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
 
+.loading p {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* ================= ERROR MESSAGE ================= */
+.error-message {
+    background: linear-gradient(135deg, #ffebee 0%, #fff 100%);
+    color: var(--danger-red);
+    padding: 15px 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    display: none;
+    border-left: 4px solid var(--danger-red);
+    font-size: 14px;
+}
+
+.error-message i {
+    margin-right: 10px;
+}
+
+/* ================= TABLE CONTAINER ================= */
 .table-container {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
     overflow: hidden;
     display: none;
 }
@@ -203,116 +390,358 @@ table {
 }
 
 th {
-    background: #4CAF50;
+    background: var(--dark-navy);
     color: white;
-    padding: 14px;
-    font-size: 14px;
+    padding: 16px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     white-space: nowrap;
+    text-align: left;
+}
+
+th:first-child {
+    padding-left: 25px;
+}
+
+th:last-child {
+    padding-right: 25px;
 }
 
 td {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
+    padding: 14px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+    color: var(--text-dark);
     white-space: nowrap;
 }
 
+td:first-child {
+    padding-left: 25px;
+    font-weight: 600;
+    color: var(--dark-navy);
+}
+
+td:last-child {
+    padding-right: 25px;
+}
+
+tr {
+    transition: background-color 0.2s ease;
+}
+
+tr:hover {
+    background-color: var(--bg-light);
+}
+
 tr:nth-child(even) {
-    background: #f5f5f5;
+    background: rgba(212, 118, 44, 0.03);
+}
+
+tr:nth-child(even):hover {
+    background: var(--bg-light);
 }
 
 .no-data {
     text-align: center;
-    padding: 40px;
-    color: #666;
+    padding: 60px 20px;
+    color: var(--text-muted);
 }
 
-.error-message {
-    background: #ffebee;
-    color: #c62828;
-    padding: 15px;
-    border-radius: 6px;
+.no-data i {
+    font-size: 50px;
+    color: var(--border-light);
+    margin-bottom: 15px;
+    display: block;
+}
+
+.no-data h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--dark-navy);
+    margin-bottom: 8px;
+}
+
+.no-data p {
+    font-size: 13px;
+}
+
+/* ================= EMPTY STATE ================= */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state i {
+    font-size: 60px;
+    color: var(--border-light);
     margin-bottom: 20px;
-    display: none;
+}
+
+.empty-state h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--dark-navy);
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        padding: 15px;
+    }
+
+    .fixed-header-wrapper {
+        margin: -15px -15px 0 -15px;
+        padding: 15px 15px 12px 15px;
+    }
 }
 
 @media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 20px;
+    }
+
+    .header-left {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .header h2 {
+        font-size: 18px;
+    }
+
     .select-wrapper {
         flex-direction: column;
     }
-    
+
     #userSelect {
         width: 100%;
     }
-    
+
+    .btn-load {
+        width: 100%;
+        justify-content: center;
+    }
+
     .user-info-header {
         flex-direction: column;
-        gap: 10px;
+        gap: 15px;
         align-items: flex-start;
     }
-    
+
+    .btn-download-user-pdf {
+        width: 100%;
+        justify-content: center;
+    }
+
     .user-stats {
         grid-template-columns: 1fr;
     }
+
+    th, td {
+        padding: 12px 10px;
+        font-size: 11px;
+    }
+
+    th:first-child, td:first-child {
+        padding-left: 15px;
+    }
+
+    th:last-child, td:last-child {
+        padding-right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-container {
+        padding: 10px;
+    }
+
+    .fixed-header-wrapper {
+        margin: -10px -10px 0 -10px;
+        padding: 10px 10px 10px 10px;
+    }
+
+    .header {
+        padding: 12px 15px;
+        border-radius: var(--radius-md);
+    }
+
+    .header-logo {
+        width: 32px;
+        height: 32px;
+    }
+
+    .header h2 {
+        font-size: 16px;
+    }
+
+    .btn-back {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+
+    .btn-back i {
+        display: none;
+    }
+
+    .user-selector,
+    .user-info-box {
+        padding: 15px;
+        border-radius: var(--radius-md);
+    }
+
+    .user-selector h3 {
+        font-size: 16px;
+    }
+
+    #userSelect {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+
+    .btn-load {
+        padding: 12px 20px;
+        font-size: 13px;
+    }
+
+    .stat-item {
+        padding: 15px;
+    }
+
+    .stat-item .value {
+        font-size: 26px;
+    }
+
+    .table-container {
+        border-radius: var(--radius-md);
+    }
+
+    table {
+        font-size: 11px;
+    }
+
+    th, td {
+        padding: 10px 8px;
+    }
+}
+
+/* ================= SCROLL CUSTOMIZATION ================= */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }
 </style>
 </head>
 
 <body>
-<div class="container">
-    <div class="header">
-        <h2>📊 User Voter Lists</h2>
-        <a href="/" class="btn-back">← Back to Dashboard</a>
-    </div>
-
-    <div class="error-message" id="errorMessage"></div>
-
-    <div class="user-selector">
-        <h3>Select User to View Their Visited Voters</h3>
-        <div class="select-wrapper">
-            <select id="userSelect">
-                <option value="">-- Select a User --</option>
-            </select>
-            <button class="btn-load" onclick="loadUserVoters()" id="loadBtn">Load Voter List</button>
-        </div>
-    </div>
-
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p>Loading data...</p>
-    </div>
-
-    <div class="user-info-box" id="userInfoBox">
-        <div class="user-info-header">
-            <h3 id="selectedUserName"></h3>
-            <button class="btn-download-user-pdf" onclick="downloadUserPDF()">
-                📄 Download PDF
-            </button>
-        </div>
-        <div class="user-stats">
-            <div class="stat-item">
-                <h4>Total Voters Visited</h4>
-                <div class="value" id="totalVisited">0</div>
+<div class="dashboard-container">
+    
+    <!-- Fixed Header -->
+    <div class="fixed-header-wrapper">
+        <div class="header">
+            <div class="header-left">
+                <a href="/dashboard" class="btn-back">
+                    <!-- <i class="fas fa-arrow-left"></i> -->
+                    <span> Back to Dashboard</span>
+                </a>
+            </div>
+            <div class="header-title">
+                <svg class="header-logo" viewBox="0 0 512 512">
+                    <path d="M256 0c0 0-30 80-60 110-20 20-50 20-50 20s20 20 50 30c30 10 60-10 60-50 0 40 30 60 60 50 30-10 50-30 50-30s-30 0-50-20C286 80 256 0 256 0z"/>
+                    <path d="M256 160c0 0-60 30-90 80-20 35-10 60-10 60s30-10 60-30c30-20 40-50 40-50s10 30 40 50c30 20 60 30 60 30s10-25-10-60c-30-50-90-80-90-80z"/>
+                </svg>
+                <div>
+                    <h2>User Voter Lists</h2>
+                    <div class="header-subtitle">View voters visited by each user</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="table-container" id="tableContainer">
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Sr No</th>
-                        <th>Voter ID</th>
-                        <th>Name (English)</th>
-                        <th>Name (Marathi)</th>
-                        <th>Relative Name</th>
-                        <th>Age</th>
-                        <th>Gender</th>
-                        <th>Visited On</th>
-                    </tr>
-                </thead>
-                <tbody id="voterTable"></tbody>
-            </table>
+    <!-- Scrollable Content -->
+    <div class="scrollable-content">
+        
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorText"></span>
+        </div>
+
+        <!-- User Selector -->
+        <div class="user-selector">
+            <h3><i class="fas fa-user-friends"></i> Select User to View Their Visited Voters</h3>
+            <div class="select-wrapper">
+                <select id="userSelect">
+                    <option value="">-- Select a User --</option>
+                </select>
+                <button class="btn-load" onclick="loadUserVoters()" id="loadBtn">
+                    <i class="fas fa-search"></i> Load Voter List
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading data...</p>
+        </div>
+
+        <!-- User Info Box -->
+        <div class="user-info-box" id="userInfoBox">
+            <div class="user-info-header">
+                <h3><i class="fas fa-user-check"></i> <span id="selectedUserName"></span></h3>
+                <button class="btn-download-user-pdf" onclick="downloadUserPDF()">
+                    <i class="fas fa-file-pdf"></i> Download PDF
+                </button>
+            </div>
+            <div class="user-stats">
+                <div class="stat-item">
+                    <h4>Total Voters Visited</h4>
+                    <div class="value" id="totalVisited">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container" id="tableContainer">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sr No</th>
+                            <th>Voter ID</th>
+                            <th>Name</th>
+                            <th>Middle Name</th>
+                            <th>Status</th>
+                            <th>Visited On</th>
+                        </tr>
+                    </thead>
+                    <tbody id="voterTable"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -330,7 +759,7 @@ tr:nth-child(even) {
     // Check if user is admin
     if (localStorage.getItem("isAdmin") !== "true") {
         alert("Access denied. Admin only.");
-        window.location.href = "/";
+        window.location.href = "/dashboard";
     }
 
     // Load users on page load
@@ -417,8 +846,12 @@ tr:nth-child(even) {
         if (voters.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="no-data">
-                        This user has not visited any voters yet.
+                    <td colspan="6">
+                        <div class="no-data">
+                            <i class="fas fa-inbox"></i>
+                            <h4>No Voters Visited</h4>
+                            <p>This user has not visited any voters yet.</p>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -426,28 +859,23 @@ tr:nth-child(even) {
         }
 
         let html = "";
-        voters.forEach(voter => {
-            const genderText = voter.gender === 'पु' || voter.gender === 'M' || voter.gender === 'Male' 
-                ? 'Male' 
-                : voter.gender === 'स्त्री' || voter.gender === 'F' || voter.gender === 'Female' 
-                ? 'Female' 
-                : voter.gender;
-            
-            const marathiName = voter.voter_name || voter.voter_name_en;
+        voters.forEach((voter, index) => {
             const relativeName = voter.relative_name || '-';
             const visitedDate = voter.visited_at 
-                ? new Date(voter.visited_at).toLocaleDateString('en-GB')
+                ? new Date(voter.visited_at).toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                })
                 : '-';
 
             html += `
                 <tr>
-                    <td>${voter.serial_no}</td>
-                    <td>${voter.voter_id}</td>
-                    <td>${voter.voter_name_en}</td>
-                    <td>${marathiName}</td>
+                    <td>${voter.serial_no || (index + 1)}</td>
+                    <td><strong>${voter.voter_id}</strong></td>
+                    <td>${voter.voter_name_en || voter.voter_name}</td>
                     <td>${relativeName}</td>
-                    <td>${voter.age}</td>
-                    <td>${genderText}</td>
+                    <td><span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 600; background: var(--primary-orange-light); color: var(--primary-orange-hover);"><i class="fas fa-check"></i> Visited</span></td>
                     <td>${visitedDate}</td>
                 </tr>
             `;
@@ -508,7 +936,7 @@ tr:nth-child(even) {
 
     function showError(message) {
         const errorDiv = document.getElementById("errorMessage");
-        errorDiv.textContent = message;
+        document.getElementById("errorText").textContent = message;
         errorDiv.style.display = "block";
     }
 

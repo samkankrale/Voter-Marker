@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoterMarker - Login</title>
+
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ================= RESET ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #bebebe;
+    color: #333;
+    overflow-x: hidden;
+}
+
+/* ================= LOGIN PAGE ================= */
+:root {
+    --primary-orange: #d4762c;
+    --primary-orange-hover: #b8621f;
+    --dark-navy: #152238;
+    --bg-overlay: linear-gradient(135deg, rgba(21, 34, 56, 0.85), rgba(212, 118, 44, 0.3));
+}
+
+#loginBox {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Poppins', sans-serif;
+}
+
+#loginBox .row {
+    height: 100%;
+}
+
+/* --- Image Column (Left) --- */
+.image-column {
+    background-image: url('/static/img.png'); 
+    background-color: var(--dark-navy);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    height: 100%;
+    padding: 0;
+}
+
+.bg-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg-overlay);
+    z-index: 1;
+}
+
+/* Gradient blend effect - creates seamless transition */
+.image-column::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -1px;
+    width: 150px;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.1) 20%,
+        rgba(255, 255, 255, 0.3) 40%,
+        rgba(255, 255, 255, 0.6) 60%,
+        rgba(255, 255, 255, 0.85) 80%,
+        white 100%
+    );
+    z-index: 3;
+    pointer-events: none;
+}
+
+.hero-text {
+    position: absolute;
+    bottom: 10%;
+    left: 10%;
+    z-index: 2;
+    color: white;
+    padding-right: 20px;
+}
+
+.hero-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+}
+
+/* --- Login Column (Right) --- */
+.login-column {
+    height: 100%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 5;
+}
+
+/* Subtle pattern overlay on login side */
+.login-column::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(212, 118, 44, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(21, 34, 56, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Login Card */
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 2.5rem 2rem;
+    border-radius: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+.header-info {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    text-align: right;
+    font-size: 0.85rem;
+    color: #666;
+    z-index: 10;
+}
+
+/* --- Logo Styling --- */
+.logo-svg {
+    width: 60px;
+    height: 60px;
+    fill: var(--primary-orange);
+    margin-bottom: 20px;
+    filter: drop-shadow(0 4px 6px rgba(212, 118, 44, 0.3));
+}
+
+/* --- Input Styling (Changed from form-floating to regular inputs) --- */
+.input-group-custom {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.input-group-custom .form-control {
+    border-radius: 50px;
+    padding: 14px 25px;
+    padding-right: 50px;
+    border: 1px solid #ddd;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    height: auto;
+}
+
+.input-group-custom .form-control::placeholder {
+    color: #888;
+    opacity: 1;
+}
+
+.input-group-custom .form-control:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 0.25rem rgba(212, 118, 44, 0.15);
+    background: white;
+    outline: none;
+}
+
+.input-group-custom .input-icon {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.input-group-custom.has-icon .form-control {
+    padding-left: 50px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
+    z-index: 5;
+    transition: color 0.3s ease;
+}
+
+.toggle-password:hover {
+    color: var(--primary-orange);
+}
+
+/* --- Button Styling --- */
+.btn-custom {
+    background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-orange-hover) 100%);
+    border: none;
+    border-radius: 50px;
+    padding: 14px;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    color: white;
+    box-shadow: 0 4px 15px rgba(212, 118, 44, 0.3);
+    font-size: 0.95rem;
+}
+
+.btn-custom:hover {
+    background: linear-gradient(135deg, var(--primary-orange-hover) 0%, #9a5518 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 118, 44, 0.4);
+}
+
+.btn-custom:active {
+    transform: translateY(0);
+}
+
+.btn-custom:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+#loginMsg {
+    margin-top: 15px;
+    text-align: center;
+    color: #e53935;
+    font-size: 14px;
+    min-height: 20px;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-orange);
+    border-color: var(--primary-orange);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(212, 118, 44, 0.25);
+    border-color: var(--primary-orange);
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 991px) {
+    #loginBox .image-column {
+        position: absolute !important;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+    }
+
+    /* Remove the gradient blend on mobile */
+    .image-column::after {
+        display: none;
+    }
+
+    #loginBox .hero-text { 
+        display: block;
+        bottom: auto;
+        top: 8%;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        width: 90%;
+        padding-right: 0;
+    }
+
+    #loginBox .hero-text h1 {
+        font-size: 2rem;
+        text-shadow: 2px 2px 15px rgba(0,0,0,0.7);
+    }
+
+    #loginBox .login-column {
+        background: transparent !important;
+        width: 100%;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    #loginBox .login-column::before {
+        display: none;
+    }
+
+    /* Beautiful Glass-morphism Card */
+    #loginBox .login-card {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.3),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        width: 100%;
+        max-width: 380px;
+        padding: 2rem 1.5rem;
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Decorative glow effect */
+    #loginBox .login-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+            circle at 30% 30%,
+            rgba(255, 255, 255, 0.15) 0%,
+            transparent 50%
+        );
+        pointer-events: none;
+    }
+
+    .login-card > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    .login-card .logo-svg {
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    }
+
+    .login-card h3 {
+        color: white !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .login-card p.text-muted {
+        color: rgba(255, 255, 255, 0.85) !important;
+    }
+
+    /* Mobile Input Styling */
+    .login-card .input-group-custom .form-control {
+        /* background: rgba(255, 255, 255, 0.25); */
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        color: #333;
+    }
+
+    .login-card .input-group-custom .form-control::placeholder {
+        color: #555;
+        opacity: 1;
+    }
+
+    .login-card .input-group-custom .form-control:focus {
+        background: rgba(255, 255, 255, 0.35);
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 0.25rem rgba(212, 118, 44, 0.25);
+        color: #333;
+    }
+
+    .login-card .input-group-custom .input-icon {
+        color: #555;
+    }
+
+    .login-card .toggle-password {
+        color: #555;
+    }
+
+    .login-card .toggle-password:hover {
+        color: var(--primary-orange);
+    }
+
+    .login-card .form-check-label {
+        color: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    .login-card .btn-custom {
+        box-shadow: 
+            0 4px 15px rgba(0, 0, 0, 0.3),
+            0 0 30px rgba(212, 118, 44, 0.2);
+    }
+
+    .login-card .btn-custom:hover {
+        box-shadow: 
+            0 6px 20px rgba(0, 0, 0, 0.4),
+            0 0 40px rgba(212, 118, 44, 0.3);
+    }
+
+    .login-card #loginMsg {
+        color: #ff6b6b;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .login-card .small.fw-bold {
+        color: rgba(255, 255, 255, 0.85) !important;
+    }
+
+    .login-card .text-success {
+        color: #69db7c !important;
+    }
+
+    #loginBox .header-info {
+        color: rgba(255, 255, 255, 0.95);
+        width: 100%;
+        text-align: center;
+        right: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        top: 22%;
+    }
+
+    #loginBox .header-info .fw-bold {
+        font-size: 0.9rem;
+    }
+
+    /* Floating animation for the card */
+    @keyframes floatCard {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+
+    #loginBox .login-card {
+        animation: floatCard 6s ease-in-out infinite;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 576px) {
+    #loginBox .login-card {
+        padding: 1.75rem 1.25rem;
+        border-radius: 20px;
+    }
+
+    #loginBox .hero-text h1 {
+        font-size: 1.5rem;
+    }
+
+    .logo-svg {
+        width: 50px;
+        height: 50px;
+    }
+
+    .login-card h3 {
+        font-size: 1.3rem !important;
+    }
+
+    .input-group-custom .form-control {
+        padding: 12px 20px;
+        padding-right: 45px;
+        font-size: 0.9rem;
+    }
+
+    .input-group-custom.has-icon .form-control {
+        padding-left: 45px;
+    }
+
+    .input-group-custom .input-icon {
+        left: 16px;
+    }
+
+    .toggle-password {
+        right: 16px;
+    }
+
+    #loginBox .header-info {
+        top: 18%;
+    }
+}
+
+/* Very small devices */
+@media (max-width: 380px) {
+    #loginBox .hero-text h1 {
+        font-size: 1.3rem;
+    }
+
+    #loginBox .header-info {
+        top: 15%;
+        font-size: 0.75rem;
+    }
+}
+</style>
+</head>
+
+<body>
+<!-- LOGIN PAGE -->
+<div id="loginBox" class="container-fluid p-0">
+    <div class="row g-0 h-100">
+        
+        <!-- LEFT: Image Background -->
+        <div class="col-lg-7 image-column">
+            <div class="bg-overlay"></div>
+            <div class="hero-text">
+                <h1>Building a<br>Better Tomorrow,<br>Together</h1>
+            </div>
+        </div>
+
+        <!-- RIGHT: Login Form -->
+        <div class="col-lg-5 login-column">
+            
+            <div class="header-info">
+                <div id="date-display" class="fw-bold">...</div>
+                <div id="time-display">...</div>
+            </div>
+
+            <div class="login-card">
+                <div class="text-center">
+                    <svg class="logo-svg" viewBox="0 0 512 512">
+                        <path d="M256 0c0 0-30 80-60 110-20 20-50 20-50 20s20 20 50 30c30 10 60-10 60-50 0 40 30 60 60 50 30-10 50-30 50-30s-30 0-50-20C286 80 256 0 256 0z"/>
+                        <path d="M256 160c0 0-60 30-90 80-20 35-10 60-10 60s30-10 60-30c30-20 40-50 40-50s10 30 40 50c30 20 60 30 60 30s10-25-10-60c-30-50-90-80-90-80z"/>
+                    </svg>
+                    <h3 class="fw-bold text-dark mb-1">Welcome Back</h3>
+                    <p class="text-muted small mb-4">Login to your dashboard</p>
+                </div>
+
+                <form onsubmit="event.preventDefault(); login();">
+                    <!-- Username Input -->
+                    <div class="input-group-custom has-icon">
+                        <i class="fa-regular fa-user input-icon"></i>
+                        <input type="text" class="form-control" id="username" placeholder="Username" required autocomplete="username">
+                    </div>
+
+                    <!-- Password Input -->
+                    <div class="input-group-custom has-icon">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" class="form-control" id="password" placeholder="Password" required autocomplete="current-password">
+                        <i class="fa-regular fa-eye toggle-password" id="togglePass"></i>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rememberMe">
+                            <label class="form-check-label small text-muted" for="rememberMe">Remember me</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-custom">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i>LOGIN SECURELY
+                    </button>
+                </form>
+
+                <p id="loginMsg"></p>
+
+                <div class="mt-4 text-center">
+                    <div class="small fw-bold text-muted">
+                        <i class="fa-solid fa-shield-halved text-success me-1"></i> Enter Your Credentials
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "";
+
+    // Check if already logged in
+    if (localStorage.getItem("token")) {
+        window.location.href = "/dashboard";
+    }
+
+    // Password toggle functionality
+    document.getElementById('togglePass').addEventListener('click', function() {
+        const input = document.getElementById('password');
+        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+        input.setAttribute('type', type);
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+    });
+
+    // Clock functionality
+    function updateClock() {
+        const now = new Date();
+        const dateOpts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const timeOpts = { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true };
+        document.getElementById('date-display').innerText = now.toLocaleDateString('en-US', dateOpts);
+        document.getElementById('time-display').innerText = now.toLocaleTimeString('en-US', timeOpts) + " IST";
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Login function
+    function login() {
+        const btn = document.querySelector('.btn-custom');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Logging in...';
+        btn.disabled = true;
+
+        // Clear previous error message
+        document.getElementById("loginMsg").innerText = "";
+
+        fetch(API + "/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                username: document.getElementById("username").value.trim(),
+                password: document.getElementById("password").value
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "Success") {
+                localStorage.setItem("token", data.data.token);
+                localStorage.setItem("isAdmin", data.data.is_admin);
+                localStorage.setItem("userName", data.data.user);
+                btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Success!';
+                btn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
+                setTimeout(() => {
+                    window.location.href = "/dashboard";
+                }, 500);
+            } else {
+                document.getElementById("loginMsg").innerText = data.Message || "Invalid credentials";
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error("Login error:", error);
+            document.getElementById("loginMsg").innerText = "Login failed. Please try again.";
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+
+    // Enter key support for inputs
+    document.getElementById('username').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('password').focus();
+        }
+    });
+</script>
+
+</body>
+</html>

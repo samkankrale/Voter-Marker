@@ -46,7 +46,7 @@ async def startup_event():
     connection_pool.initialize(
         host="localhost",
         user="root",
-        password="Sam@130201",
+        password="Atul@2002",
         database="election",
         charset="utf8mb4",
         autocommit=False,
@@ -58,9 +58,14 @@ async def shutdown_event():
     connection_pool.close_all()
 
 
+@app.get("/dashboard", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request})
+
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return templates.TemplateResponse("new.html", {"request": request})
+    return templates.TemplateResponse("login.html", {"request": request})
+
 
 @app.get("/user-voter-list", response_class=HTMLResponse)
 def user_voter_list_page(request: Request):

@@ -3,8 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management</title>
+    <title>User Management - VoterMarker</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
+        /* ================= ROOT VARIABLES ================= */
+        :root {
+            --primary-orange: #d4762c;
+            --primary-orange-hover: #b8621f;
+            --primary-orange-light: rgba(212, 118, 44, 0.1);
+            --dark-navy: #152238;
+            --dark-navy-light: #1e3a5f;
+            --success-green: #2E7D32;
+            --success-green-light: #4CAF50;
+            --danger-red: #e53935;
+            --danger-red-hover: #c62828;
+            --warning-orange: #ff9800;
+            --text-dark: #333;
+            --text-muted: #666;
+            --text-light: #999;
+            --bg-light: #f8f9fa;
+            --bg-card: #ffffff;
+            --border-light: #e0e0e0;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-full: 50px;
+        }
+
+        /* ================= RESET ================= */
         * {
             margin: 0;
             padding: 0;
@@ -12,54 +48,148 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Poppins', "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            color: var(--text-dark);
             min-height: 100vh;
-            padding: 20px;
         }
 
-        .main-container {
-            max-width: 1200px;
+        /* ================= MAIN CONTAINER ================= */
+        .dashboard-container {
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
         }
 
-        .page-header {
-            text-align: center;
+        /* ================= FIXED HEADER ================= */
+        .fixed-header-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            margin: -20px -20px 0 -20px;
+            padding: 20px 20px 15px 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--dark-navy) 0%, var(--dark-navy-light) 100%);
+            border-radius: var(--radius-lg);
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(212, 118, 44, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: var(--radius-full);
+            background: rgba(255,255,255,0.15);
             color: white;
-            margin-bottom: 30px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
         }
 
-        .page-header h1 {
-            font-size: 36px;
-            margin-bottom: 8px;
+        .btn-back:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
         }
 
-        .page-header p {
-            font-size: 16px;
-            opacity: 0.9;
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1;
         }
 
+        .header-logo {
+            width: 40px;
+            height: 40px;
+            fill: var(--primary-orange);
+        }
+
+        .header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+
+        .header-subtitle {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 400;
+        }
+
+        /* ================= SCROLLABLE CONTENT ================= */
+        .scrollable-content {
+            margin-top: 20px;
+        }
+
+        /* ================= ADD USER FORM ================= */
         .add-user-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
             padding: 30px;
-            margin-bottom: 30px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 25px;
         }
 
         .form-header {
             text-align: center;
             margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--bg-light);
         }
 
         .form-header h2 {
-            color: #333;
+            font-family: 'Playfair Display', serif;
+            color: var(--dark-navy);
             font-size: 24px;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .form-header h2 i {
+            color: var(--primary-orange);
         }
 
         .form-header p {
-            color: #666;
+            color: var(--text-muted);
             font-size: 14px;
         }
 
@@ -74,64 +204,99 @@
             margin-bottom: 0;
         }
 
-        label {
+        .form-group label {
             display: block;
-            color: #333;
+            color: var(--dark-navy);
             font-weight: 600;
             margin-bottom: 8px;
-            font-size: 14px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        input {
+        .form-group label i {
+            margin-right: 6px;
+            color: var(--primary-orange);
+        }
+
+        .form-group input {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e1e8ed;
-            border-radius: 8px;
-            font-size: 15px;
+            padding: 14px 18px;
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-full);
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
             transition: all 0.3s ease;
             outline: none;
         }
 
-        input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        .form-group input:focus {
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 4px var(--primary-orange-light);
         }
 
-        .btn {
+        .form-group input::placeholder {
+            color: var(--text-light);
+        }
+
+        .input-icon {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+            user-select: none;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-orange);
+        }
+
+        .btn-submit {
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-hover));
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: var(--radius-full);
+            font-size: 15px;
             font-weight: 600;
+            font-family: 'Poppins', sans-serif;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: all 0.3s ease;
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(212, 118, 44, 0.4);
         }
 
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
+        .btn-submit:disabled {
+            opacity: 0.7;
             cursor: not-allowed;
             transform: none;
         }
 
+        /* ================= MESSAGE ================= */
         .message {
-            padding: 12px 16px;
-            border-radius: 8px;
+            padding: 15px 20px;
+            border-radius: var(--radius-md);
             margin-bottom: 20px;
             display: none;
             animation: slideIn 0.3s ease;
+            font-size: 14px;
         }
 
         @keyframes slideIn {
@@ -146,55 +311,44 @@
         }
 
         .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(76, 175, 80, 0.1) 100%);
+            color: var(--success-green);
+            border-left: 4px solid var(--success-green);
             display: block;
         }
 
         .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: linear-gradient(135deg, rgba(229, 57, 53, 0.1) 0%, rgba(198, 40, 40, 0.1) 100%);
+            color: var(--danger-red);
+            border-left: 4px solid var(--danger-red);
             display: block;
         }
 
+        .message i {
+            margin-right: 10px;
+        }
+
+        /* ================= LOADING SPINNER ================= */
         .loading {
             display: inline-block;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 0.8s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        .input-icon {
-            position: relative;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #666;
-            user-select: none;
-            font-size: 18px;
-        }
-
+        /* ================= USERS LIST ================= */
         .users-list-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
             padding: 30px;
+            box-shadow: var(--shadow-md);
         }
 
         .list-header {
@@ -202,55 +356,204 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e1e8ed;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--bg-light);
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .list-header h2 {
-            color: #333;
-            font-size: 24px;
+            font-family: 'Playfair Display', serif;
+            color: var(--dark-navy);
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .list-header h2 i {
+            color: var(--primary-orange);
         }
 
         .user-count {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--dark-navy), var(--dark-navy-light));
             color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
+            padding: 10px 20px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
             font-weight: 600;
         }
 
+        /* ================= SEARCH BAR ================= */
+        .search-container {
+            margin-bottom: 25px;
+        }
+
+        .search-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-input-wrapper i.search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        #userSearchInput {
+            width: 100%;
+            padding: 14px 20px 14px 50px;
+            border-radius: var(--radius-full);
+            border: 2px solid var(--border-light);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        #userSearchInput:focus {
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 4px var(--primary-orange-light);
+        }
+
+        #userSearchInput::placeholder {
+            color: var(--text-light);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .search-clear:hover {
+            background: var(--bg-light);
+            color: var(--danger-red);
+        }
+
+        .search-clear.show {
+            display: block;
+        }
+
+        .btn-search {
+            padding: 14px 28px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-hover));
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(212, 118, 44, 0.4);
+        }
+
+        .search-info {
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-results-info {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: var(--primary-orange-light);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            color: var(--primary-orange-hover);
+            border-left: 4px solid var(--primary-orange);
+            display: none;
+        }
+
+        .search-results-info.show {
+            display: block;
+        }
+
+        /* ================= USERS GRID ================= */
         .users-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
         }
 
         .user-card {
-            background: #f8f9fa;
-            border: 2px solid #e1e8ed;
-            border-radius: 10px;
-            padding: 20px;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #fff 100%);
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 25px;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .user-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-orange), var(--primary-orange-hover));
         }
 
         .user-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-orange);
+        }
+
+        .user-card.highlight {
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 4px var(--primary-orange-light);
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
         }
 
         .user-card-header {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .user-avatar {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--dark-navy), var(--dark-navy-light));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -258,101 +561,139 @@
             font-size: 20px;
             font-weight: bold;
             margin-right: 15px;
+            font-family: 'Playfair Display', serif;
         }
 
         .user-info h3 {
-            color: #333;
+            font-family: 'Playfair Display', serif;
+            color: var(--dark-navy);
             font-size: 18px;
             margin-bottom: 4px;
         }
 
         .user-info p {
-            color: #666;
-            font-size: 14px;
+            color: var(--primary-orange);
+            font-size: 13px;
+            font-weight: 500;
         }
 
         .user-details {
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid #e1e8ed;
+            border-top: 1px solid var(--border-light);
         }
 
         .user-detail-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 10px;
+            font-size: 13px;
         }
 
         .user-detail-label {
-            color: #666;
-            font-weight: 600;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .user-detail-label i {
+            margin-right: 6px;
+            color: var(--primary-orange);
         }
 
         .user-detail-value {
-            color: #333;
+            color: var(--dark-navy);
+            font-weight: 600;
         }
 
         .user-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 12px;
+            margin-top: 20px;
         }
 
         .action-btn {
             flex: 1;
-            padding: 10px;
+            padding: 12px;
             border: none;
-            border-radius: 6px;
-            font-size: 14px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Poppins', sans-serif;
         }
 
         .btn-update {
-            background-color: #28a745;
+            background: linear-gradient(135deg, var(--success-green), var(--success-green-light));
             color: white;
         }
 
         .btn-update:hover {
-            background-color: #218838;
             transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
         }
 
         .btn-delete {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, var(--danger-red), var(--danger-red-hover));
             color: white;
         }
 
         .btn-delete:hover {
-            background-color: #c82333;
             transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
         }
 
         .no-users {
             text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 16px;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            grid-column: 1 / -1;
+        }
+
+        .no-users i {
+            font-size: 60px;
+            color: var(--border-light);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .no-users h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            color: var(--dark-navy);
+            margin-bottom: 10px;
+        }
+
+        .no-users p {
+            font-size: 14px;
         }
 
         .loading-users {
             text-align: center;
-            padding: 40px;
+            padding: 60px 20px;
+            grid-column: 1 / -1;
         }
 
         .loading-users .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e1e8ed;
-            border-top-color: #667eea;
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-light);
+            border-top-color: var(--primary-orange);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 20px;
         }
 
-        /* Modal Styles */
+        .loading-users p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* ================= MODAL ================= */
         .modal {
             display: none;
             position: fixed;
@@ -360,7 +701,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(21, 34, 56, 0.8);
+            backdrop-filter: blur(5px);
             z-index: 1000;
             animation: fadeIn 0.3s ease;
         }
@@ -378,11 +720,11 @@
 
         .modal-content {
             background: white;
-            border-radius: 12px;
+            border-radius: var(--radius-xl);
             padding: 30px;
-            max-width: 500px;
+            max-width: 450px;
             width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-lg);
             animation: slideUp 0.3s ease;
         }
 
@@ -402,78 +744,149 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--bg-light);
         }
 
         .modal-header h3 {
-            color: #333;
+            font-family: 'Playfair Display', serif;
+            color: var(--dark-navy);
             font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-header h3 i {
+            color: var(--primary-orange);
         }
 
         .close-btn {
-            background: none;
+            background: var(--bg-light);
             border: none;
-            font-size: 28px;
+            font-size: 20px;
             cursor: pointer;
-            color: #666;
-            line-height: 1;
-            padding: 0;
+            color: var(--text-muted);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
         }
 
         .close-btn:hover {
-            color: #333;
+            background: var(--border-light);
+            color: var(--danger-red);
         }
 
         .modal-body {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .modal-body p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .modal-body strong {
+            color: var(--primary-orange);
+        }
+
+        .warning-text {
+            color: var(--danger-red) !important;
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(229, 57, 53, 0.1);
+            border-radius: var(--radius-sm);
+            font-size: 13px !important;
+        }
+
+        .warning-text i {
+            margin-right: 8px;
         }
 
         .modal-footer {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             justify-content: flex-end;
         }
 
         .modal-btn {
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 6px;
+            border-radius: var(--radius-full);
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-cancel {
-            background-color: #6c757d;
-            color: white;
+            background: var(--bg-light);
+            color: var(--text-muted);
         }
 
         .btn-cancel:hover {
-            background-color: #5a6268;
+            background: var(--border-light);
         }
 
         .btn-confirm {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, var(--danger-red), var(--danger-red-hover));
             color: white;
         }
 
         .btn-confirm:hover {
-            background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-hover));
             color: white;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgba(212, 118, 44, 0.4);
+        }
+
+        /* ================= RESPONSIVE ================= */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                padding: 15px;
+            }
+
+            .fixed-header-wrapper {
+                margin: -15px -15px 0 -15px;
+                padding: 15px 15px 12px 15px;
+            }
+
+            .users-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
         }
 
         @media (max-width: 768px) {
-            .page-header h1 {
-                font-size: 28px;
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px 20px;
+            }
+
+            .header-left {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .header h2 {
+                font-size: 18px;
             }
 
             .form-row {
@@ -487,84 +900,284 @@
             .list-header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 10px;
+                gap: 15px;
             }
+
+            .user-count {
+                align-self: flex-start;
+            }
+
+            .add-user-container,
+            .users-list-container {
+                padding: 20px;
+            }
+
+            .search-wrapper {
+                flex-direction: column;
+            }
+
+            .btn-search {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+
+            .modal-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-container {
+                padding: 10px;
+            }
+
+            .fixed-header-wrapper {
+                margin: -10px -10px 0 -10px;
+                padding: 10px 10px 10px 10px;
+            }
+
+            .header {
+                padding: 12px 15px;
+                border-radius: var(--radius-md);
+            }
+
+            .header-logo {
+                width: 32px;
+                height: 32px;
+            }
+
+            .header h2 {
+                font-size: 16px;
+            }
+/* 
+            .btn-back {
+                padding: 8px 14px;
+                font-size: 12px;
+            } */
+
+            /* .btn-back span {
+                display: none;
+            } */
+
+            .add-user-container,
+            .users-list-container {
+                padding: 15px;
+                border-radius: var(--radius-md);
+            }
+
+            .form-header h2 {
+                font-size: 20px;
+            }
+
+            .form-group input {
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+
+            .btn-submit {
+                padding: 14px;
+                font-size: 14px;
+            }
+
+            .list-header h2 {
+                font-size: 18px;
+            }
+
+            #userSearchInput {
+                padding: 12px 16px 12px 45px;
+                font-size: 13px;
+            }
+
+            .btn-search {
+                padding: 12px 20px;
+                font-size: 13px;
+            }
+
+            .user-card {
+                padding: 20px;
+            }
+
+            .user-avatar {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+
+            .user-info h3 {
+                font-size: 16px;
+            }
+
+            .user-actions {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .modal-content {
+                padding: 20px;
+                border-radius: var(--radius-lg);
+            }
+
+            .modal-header h3 {
+                font-size: 18px;
+            }
+        }
+
+        /* ================= SCROLL CUSTOMIZATION ================= */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="page-header">
-            <h1>👥 User Management</h1>
-            <p>Add new users and manage existing accounts</p>
-        </div>
-
-        <div class="add-user-container">
-            <div class="form-header">
-                <h2>➕ Add New User</h2>
-                <p>Create a new user account</p>
-            </div>
-
-            <div id="message" class="message"></div>
-
-            <form id="addUserForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="name">Full Name</label>
-                        <input 
-                            type="text" 
-                            id="name" 
-                            name="name" 
-                            placeholder="Enter full name" 
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label for="user_name">Username</label>
-                        <input 
-                            type="text" 
-                            id="user_name" 
-                            name="user_name" 
-                            placeholder="Enter username" 
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <div class="input-icon">
-                            <input 
-                                type="password" 
-                                id="password" 
-                                name="password" 
-                                placeholder="Enter password" 
-                                minlength="6"
-                                required
-                            >
-                            <span class="password-toggle" onclick="togglePassword()">👁️</span>
-                        </div>
+    <div class="dashboard-container">
+        
+        <!-- Fixed Header -->
+        <div class="fixed-header-wrapper">
+            <div class="header">
+                <div class="header-left">
+                    <a href="/dashboard" class="btn-back">
+                        <!-- <i class="fas fa-arrow-left"></i>  -->
+                        <span>Back to Dashboard</span>
+                    </a>
+                </div>
+                <div class="header-title">
+                    <svg class="header-logo" viewBox="0 0 512 512">
+                        <path d="M256 0c0 0-30 80-60 110-20 20-50 20-50 20s20 20 50 30c30 10 60-10 60-50 0 40 30 60 60 50 30-10 50-30 50-30s-30 0-50-20C286 80 256 0 256 0z"/>
+                        <path d="M256 160c0 0-60 30-90 80-20 35-10 60-10 60s30-10 60-30c30-20 40-50 40-50s10 30 40 50c30 20 60 30 60 30s10-25-10-60c-30-50-90-80-90-80z"/>
+                    </svg>
+                    <div>
+                        <h2>User Management</h2>
+                        <div class="header-subtitle">Add and manage user accounts</div>
                     </div>
                 </div>
-
-                <button type="submit" class="btn" id="submitBtn">
-                    Add User
-                </button>
-            </form>
+            </div>
         </div>
 
-        <div class="users-list-container">
-            <div class="list-header">
-                <h2>📋 Existing Users</h2>
-                <span class="user-count" id="userCount">0 Users</span>
+        <!-- Scrollable Content -->
+        <div class="scrollable-content">
+            
+            <!-- Add User Form -->
+            <div class="add-user-container">
+                <div class="form-header">
+                    <h2><i class="fas fa-user-plus"></i> Add New User</h2>
+                    <p>Create a new user account for the system</p>
+                </div>
+
+                <div id="message" class="message"></div>
+
+                <form id="addUserForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name"><i class="fas fa-user"></i> Full Name</label>
+                            <input 
+                                type="text" 
+                                id="name" 
+                                name="name" 
+                                placeholder="Enter full name" 
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="user_name"><i class="fas fa-at"></i> Username</label>
+                            <input 
+                                type="text" 
+                                id="user_name" 
+                                name="user_name" 
+                                placeholder="Enter username" 
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password"><i class="fas fa-lock"></i> Password</label>
+                            <div class="input-icon">
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    name="password" 
+                                    placeholder="Enter password" 
+                                    minlength="6"
+                                    required
+                                >
+                                <span class="password-toggle" onclick="togglePassword()">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <i class="fas fa-plus-circle"></i> Add User
+                    </button>
+                </form>
             </div>
 
-            <div id="loadingUsers" class="loading-users" style="display: none;">
-                <div class="spinner"></div>
-                <p>Loading users...</p>
-            </div>
+            <!-- Users List -->
+            <div class="users-list-container">
+                <div class="list-header">
+                    <h2><i class="fas fa-users"></i> Existing Users</h2>
+                    <span class="user-count" id="userCount">0 Users</span>
+                </div>
 
-            <div id="usersGrid" class="users-grid"></div>
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <div class="search-wrapper">
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                        <input 
+    type="text" 
+    id="userSearchInput"
+    name="userSearchInput"
+    autocomplete="off"
+    placeholder="Search by name, username, or ID..."
+    oninput="handleUserSearch()"
+>
+
+                            <button class="search-clear" id="searchClearBtn" onclick="clearUserSearch()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <button class="btn-search" onclick="performUserSearch()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                    <div class="search-info" id="searchInfo">
+                        <i class="fas fa-info-circle"></i> Search users by name, username, or user ID
+                    </div>
+                    <div class="search-results-info" id="searchResultsInfo"></div>
+                </div>
+
+                <div id="loadingUsers" class="loading-users" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Loading users...</p>
+                </div>
+
+                <div id="usersGrid" class="users-grid"></div>
+            </div>
         </div>
     </div>
 
@@ -572,16 +1185,22 @@
     <div id="deleteModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>⚠️ Confirm Delete</h3>
-                <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+                <h3><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h3>
+                <button class="close-btn" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <p>Are you sure you want to delete <strong id="deleteUserName"></strong>?</p>
-                <p style="color: #dc3545; margin-top: 10px;">This action cannot be undone.</p>
+                <p class="warning-text"><i class="fas fa-warning"></i> This action cannot be undone. All data associated with this user will be permanently removed.</p>
             </div>
             <div class="modal-footer">
-                <button class="modal-btn btn-cancel" onclick="closeDeleteModal()">Cancel</button>
-                <button class="modal-btn btn-confirm" onclick="confirmDelete()">Delete</button>
+                <button class="modal-btn btn-cancel" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="modal-btn btn-confirm" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
             </div>
         </div>
     </div>
@@ -590,13 +1209,15 @@
     <div id="updateModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>🔐 Update Password</h3>
-                <button class="close-btn" onclick="closeUpdateModal()">&times;</button>
+                <h3><i class="fas fa-key"></i> Update Password</h3>
+                <button class="close-btn" onclick="closeUpdateModal()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
-                <p style="margin-bottom: 15px;">Update password for <strong id="updateUserName"></strong></p>
+                <p style="margin-bottom: 20px;">Update password for <strong id="updateUserName"></strong></p>
                 <div class="form-group">
-                    <label for="newPassword">New Password</label>
+                    <label for="newPassword"><i class="fas fa-lock"></i> New Password</label>
                     <div class="input-icon">
                         <input 
                             type="password" 
@@ -604,13 +1225,19 @@
                             placeholder="Enter new password" 
                             minlength="6"
                         >
-                        <span class="password-toggle" onclick="toggleNewPassword()">👁️</span>
+                        <span class="password-toggle" onclick="toggleNewPassword()">
+                            <i class="fas fa-eye" id="toggleNewIcon"></i>
+                        </span>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="modal-btn btn-cancel" onclick="closeUpdateModal()">Cancel</button>
-                <button class="modal-btn btn-primary" onclick="confirmUpdate()">Update Password</button>
+                <button class="modal-btn btn-cancel" onclick="closeUpdateModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="modal-btn btn-primary" onclick="confirmUpdate()">
+                    <i class="fas fa-save"></i> Update Password
+                </button>
             </div>
         </div>
     </div>
@@ -627,36 +1254,59 @@
         const usersGrid = document.getElementById('usersGrid');
         const userCount = document.getElementById('userCount');
         const loadingUsers = document.getElementById('loadingUsers');
+        const searchInput = document.getElementById('userSearchInput');
+        const searchClearBtn = document.getElementById('searchClearBtn');
+        const searchInfo = document.getElementById('searchInfo');
+        const searchResultsInfo = document.getElementById('searchResultsInfo');
+        window.addEventListener('DOMContentLoaded', () => {
+    searchInput.value = '';
+});
         
         let currentDeleteUserId = null;
         let currentUpdateUserId = null;
+        let allUsers = []; // Store all users for client-side filtering
+        let searchTimeout = null;
+
+        // Check authentication
+        if (!localStorage.getItem("token")) {
+            window.location.href = "/";
+        }
+
+        if (localStorage.getItem("isAdmin") !== "true") {
+            alert("Access denied. Admin only.");
+            window.location.href = "/dashboard";
+        }
 
         function togglePassword() {
             const passwordInput = document.getElementById('password');
-            const toggle = document.querySelector('.password-toggle');
+            const toggleIcon = document.getElementById('toggleIcon');
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                toggle.textContent = '🙈';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
             } else {
                 passwordInput.type = 'password';
-                toggle.textContent = '👁️';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
             }
         }
 
         function toggleNewPassword() {
             const passwordInput = document.getElementById('newPassword');
-            const toggle = passwordInput.nextElementSibling;
+            const toggleIcon = document.getElementById('toggleNewIcon');
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                toggle.textContent = '🙈';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
             } else {
                 passwordInput.type = 'password';
-                toggle.textContent = '👁️';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
             }
         }
 
         function showMessage(message, type) {
-            messageDiv.textContent = message;
+            messageDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
             messageDiv.className = `message ${type}`;
             
             setTimeout(() => {
@@ -673,6 +1323,155 @@
                 .substring(0, 2);
         }
 
+        // ============= SEARCH FUNCTIONALITY =============
+        function handleUserSearch() {
+            const query = searchInput.value.trim();
+            
+            // Show/hide clear button
+            if (query.length > 0) {
+                searchClearBtn.classList.add('show');
+            } else {
+                searchClearBtn.classList.remove('show');
+            }
+
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+
+            // If empty, show all users
+            if (query.length === 0) {
+                searchInfo.style.display = 'flex';
+                searchResultsInfo.classList.remove('show');
+                renderUsers(allUsers);
+                return;
+            }
+
+            // Debounce search
+            searchTimeout = setTimeout(() => {
+                performUserSearch();
+            }, 300);
+        }
+
+        function performUserSearch() {
+            const query = searchInput.value.trim().toLowerCase();
+
+            if (query.length === 0) {
+                searchInfo.style.display = 'flex';
+                searchResultsInfo.classList.remove('show');
+                renderUsers(allUsers);
+                return;
+            }
+
+            // Filter users
+            const filteredUsers = allUsers.filter(user => {
+                const nameMatch = user.name.toLowerCase().includes(query);
+                const usernameMatch = user.user_name.toLowerCase().includes(query);
+                const idMatch = user.id.toString().includes(query);
+                return nameMatch || usernameMatch || idMatch;
+            });
+
+            // Update UI
+            searchInfo.style.display = 'none';
+            searchResultsInfo.innerHTML = `<i class="fas fa-search"></i> Found ${filteredUsers.length} user(s) matching "${query}"`;
+            searchResultsInfo.classList.add('show');
+
+            // Render filtered users
+            renderUsers(filteredUsers, query);
+        }
+
+        function clearUserSearch() {
+            searchInput.value = '';
+            searchClearBtn.classList.remove('show');
+            searchInfo.style.display = 'flex';
+            searchResultsInfo.classList.remove('show');
+            renderUsers(allUsers);
+        }
+
+        function renderUsers(users, highlightQuery = '') {
+            userCount.textContent = `${users.length} User${users.length !== 1 ? 's' : ''}`;
+
+            if (users.length === 0) {
+                if (highlightQuery) {
+                    usersGrid.innerHTML = `
+                        <div class="no-users">
+                            <i class="fas fa-search"></i>
+                            <h4>No Users Found</h4>
+                            <p>No users match your search "${highlightQuery}"</p>
+                        </div>
+                    `;
+                } else {
+                    usersGrid.innerHTML = `
+                        <div class="no-users">
+                            <i class="fas fa-users-slash"></i>
+                            <h4>No Users Found</h4>
+                            <p>Add your first user using the form above!</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            let html = '';
+            users.forEach(user => {
+                // Highlight matching text
+                let displayName = user.name;
+                let displayUsername = user.user_name;
+                let displayId = user.id.toString();
+
+                if (highlightQuery) {
+                    const regex = new RegExp(`(${highlightQuery})`, 'gi');
+                    displayName = user.name.replace(regex, '<mark style="background: var(--primary-orange-light); color: var(--primary-orange); padding: 2px 4px; border-radius: 4px;">$1</mark>');
+                    displayUsername = user.user_name.replace(regex, '<mark style="background: var(--primary-orange-light); color: var(--primary-orange); padding: 2px 4px; border-radius: 4px;">$1</mark>');
+                    displayId = user.id.toString().replace(regex, '<mark style="background: var(--primary-orange-light); color: var(--primary-orange); padding: 2px 4px; border-radius: 4px;">$1</mark>');
+                }
+
+                html += `
+                    <div class="user-card ${highlightQuery ? 'highlight' : ''}">
+                        <div class="user-card-header">
+                            <div class="user-avatar">
+                                ${getInitials(user.name)}
+                            </div>
+                            <div class="user-info">
+                                <h3>${displayName}</h3>
+                                <p>@${displayUsername}</p>
+                            </div>
+                        </div>
+                        <div class="user-details">
+                            <div class="user-detail-row">
+                                <span class="user-detail-label"><i class="fas fa-id-badge"></i> User ID</span>
+                                <span class="user-detail-value">#${displayId}</span>
+                            </div>
+                            <div class="user-detail-row">
+                                <span class="user-detail-label"><i class="fas fa-at"></i> Username</span>
+                                <span class="user-detail-value">${user.user_name}</span>
+                            </div>
+                        </div>
+                        <div class="user-actions">
+                            <button class="action-btn btn-update" onclick="openUpdateModal(${user.id}, '${user.name.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-key"></i> Update
+                            </button>
+                            <button class="action-btn btn-delete" onclick="openDeleteModal(${user.id}, '${user.name.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            usersGrid.innerHTML = html;
+
+            // Remove highlight after animation
+            if (highlightQuery) {
+                setTimeout(() => {
+                    document.querySelectorAll('.user-card.highlight').forEach(card => {
+                        card.classList.remove('highlight');
+                    });
+                }, 1000);
+            }
+        }
+
+        // ============= MODAL FUNCTIONS =============
         function openDeleteModal(userId, userName) {
             currentDeleteUserId = userId;
             document.getElementById('deleteUserName').textContent = userName;
@@ -760,6 +1559,7 @@
             }
         }
 
+        // ============= LOAD USERS =============
         async function loadUsers() {
             loadingUsers.style.display = 'block';
             usersGrid.innerHTML = '';
@@ -779,60 +1579,38 @@
                 loadingUsers.style.display = 'none';
 
                 if (data.status === 'success' && data.users) {
-                    const users = data.users;
-                    userCount.textContent = `${users.length} User${users.length !== 1 ? 's' : ''}`;
-
-                    if (users.length === 0) {
-                        usersGrid.innerHTML = '<div class="no-users">No users found. Add your first user above!</div>';
-                        return;
+                    allUsers = data.users; // Store all users
+                    
+                    // Check if there's an active search
+                    const currentQuery = searchInput.value.trim();
+                    if (currentQuery.length > 0) {
+                        performUserSearch();
+                    } else {
+                        renderUsers(allUsers);
                     }
-
-                    let html = '';
-                    users.forEach(user => {
-                        html += `
-                            <div class="user-card">
-                                <div class="user-card-header">
-                                    <div class="user-avatar">
-                                        ${getInitials(user.name)}
-                                    </div>
-                                    <div class="user-info">
-                                        <h3>${user.name}</h3>
-                                        <p>@${user.user_name}</p>
-                                    </div>
-                                </div>
-                                <div class="user-details">
-                                    <div class="user-detail-row">
-                                        <span class="user-detail-label">User ID:</span>
-                                        <span class="user-detail-value">#${user.id}</span>
-                                    </div>
-                                    <div class="user-detail-row">
-                                        <span class="user-detail-label">Username:</span>
-                                        <span class="user-detail-value">${user.user_name}</span>
-                                    </div>
-                                </div>
-                                <div class="user-actions">
-                                    <button class="action-btn btn-update" onclick="openUpdateModal(${user.id}, '${user.name}')">
-                                        🔐 Update
-                                    </button>
-                                    <button class="action-btn btn-delete" onclick="openDeleteModal(${user.id}, '${user.name}')">
-                                        🗑️ Delete
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    usersGrid.innerHTML = html;
                 } else {
-                    usersGrid.innerHTML = '<div class="no-users">Failed to load users</div>';
+                    usersGrid.innerHTML = `
+                        <div class="no-users">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h4>Failed to Load Users</h4>
+                            <p>Please try refreshing the page.</p>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 loadingUsers.style.display = 'none';
                 console.error('Error loading users:', error);
-                usersGrid.innerHTML = '<div class="no-users">Error loading users. Please try again.</div>';
+                usersGrid.innerHTML = `
+                    <div class="no-users">
+                        <i class="fas fa-wifi-slash"></i>
+                        <h4>Connection Error</h4>
+                        <p>Please check your connection and try again.</p>
+                    </div>
+                `;
             }
         }
 
+        // ============= ADD USER FORM =============
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -843,7 +1621,7 @@
             };
 
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="loading"></span>Adding User...';
+            submitBtn.innerHTML = '<span class="loading"></span> Adding User...';
 
             try {
                 const token = localStorage.getItem('token');
@@ -871,14 +1649,23 @@
                 console.error('Error:', error);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Add User';
+                submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Add User';
             }
         });
 
+        // ============= EVENT LISTENERS =============
         document.addEventListener('DOMContentLoaded', () => {
             loadUsers();
         });
 
+        // Enter key for search
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performUserSearch();
+            }
+        });
+
+        // Close modals on outside click
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 closeDeleteModal();
